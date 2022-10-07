@@ -1,5 +1,5 @@
 //import simple functions for drawing on screen
-import { makeArray, screenFill, drawLine, lineTrig, fillTrig } from "C:/Users/1653371/Downloads/html projects/3d render/simpleFunc.js";
+import { makeArray, screenFill, drawLine, lineTrig, fillTrig } from "./simpleFunc.js";
 
 window.onload = function() {
   //Initializing canvas vars
