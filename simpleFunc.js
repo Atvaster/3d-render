@@ -159,10 +159,19 @@ function fillTrig(array, point1, point2, point3, color) {
   } else {
     let m = (point3[1] - point1[1])/(point3[0] - point1[0]);
     let b = point1[1] - m * point1[0];
-    point4 = [(point2[1] - b)/m, point2[1]];
+    let point4 = [(point2[1] - b)/m, point2[1]];
     fillBottomTrig(array, point1, point2, point4, color);
     fillTopTrig(array, point2, point4, point3, color);
   }
 }
 
-export{ makeArray, screenFill, drawLine, lineTrig, fillTrig }
+function makeTrig(array, point1, point2, point3, color1, color2) {
+  if(color1 != "none") {
+    lineTrig(array, point1, point2, point3, color1);
+  }
+  if(color2 != "none") {
+    fillTrig(array, point1, point2, point3, color2);
+  }
+}
+
+export{ makeArray, screenFill, drawLine, lineTrig, fillTrig, makeTrig }

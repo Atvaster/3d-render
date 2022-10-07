@@ -1,5 +1,5 @@
 //import simple functions for drawing on screen
-import { makeArray, screenFill, drawLine, lineTrig, fillTrig } from "./simpleFunc.js";
+import { makeArray, screenFill, drawLine, lineTrig, fillTrig, makeTrig } from "./simpleFunc.js";
 
 window.onload = function() {
   //Initializing canvas vars
@@ -18,8 +18,7 @@ window.onload = function() {
   var white = [255, 255, 255];
   
   screenFill(pixels, black);
-  lineTrig(pixels, [100, 300], [200, 600], [300, 300], white);
-  fillTrig(pixels, [100, 300], [200, 600], [300, 300], white);
+  makeTrig(pixels, [100, 300], [200, 600], [300, 400], white, "none");
   
 
   //Turn pixel data into 1d array for use in canvas
