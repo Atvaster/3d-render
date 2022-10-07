@@ -1,5 +1,5 @@
 //import simple functions for drawing on screen
-import { makeArray, screenFill, drawLine, lineTrig, fillTrig, makeTrig } from "./simpleFunc.js";
+import { makeArray, screenFill, drawLine, lineTrig, fillTrig, makeTrig, projectPoints, drawCube } from "./simpleFunc.js";
 
 window.onload = function() {
   //Initializing canvas vars
@@ -13,13 +13,21 @@ window.onload = function() {
   //2d array that I will write to.
   var pixels = makeArray(height, width, 0);
   
-  //Colors presets
+  //Color presets
   var black = [  0,   0,   0];
+  var red   = [255,   0,   0];
+  var green = [  0, 255,   0];
+  var blue  = [  0,   0, 255];
   var white = [255, 255, 255];
   
   screenFill(pixels, black);
-  makeTrig(pixels, [100, 300], [200, 600], [300, 400], white, "none");
-  
+  drawCube(pixels, [-3, -3, -10], 3, white);
+  drawCube(pixels, [-3, 3, -10], 3, white);
+  drawCube(pixels, [3, -3, -10], 3, white);
+  drawCube(pixels, [3, 3, -10], 3, white);
+  //drawCube(pixels, [0, 0, -10], 3, white);
+
+
 
   //Turn pixel data into 1d array for use in canvas
   function convertData() {

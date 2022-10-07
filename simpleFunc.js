@@ -1,4 +1,4 @@
-//Function I fucking stole off the internet to make 2d arrays of a given size
+//Function I stole off the internet to make 2d arrays of a given size
 function makeArray(w, h, val) {
   var arr = [];
   for(let i = 0; i < h; i++) {
@@ -21,53 +21,44 @@ function screenFill(array, color) {
 
 //Draws line from one point to another
 function drawLine(array, point1, point2, color) {
-  let accuracy = 100;
-  if(point1[0] > point2[0]) {
-    var x1 = point2[0];
-    var x2 = point1[0];
-    var y1 = point2[1];
-    var y2 = point1[1];
-  } else {
-    var x1 = point1[0];
-    var x2 = point2[0];
-    var y1 = point1[1];
-    var y2 = point2[1];
-  }
-  var m = (y2 - y1)/(x2 - x1);
-  if((m > (array[0].length)/10 || m < -1 * (array.length[0])/10) && m != Infinity) {
-    var b = y1 - (m * x1);
+  let accuracy = 2;
+  var m = (point2[1] - point1[1])/(point2[0] - point1[0]);
+  var b = point1[1] - (m * point1[0]);
+  
+  //Case for vertical line
+  if(m == Infinity || m == -Infinity) {
     if(point1[1] > point2[1]) {
-      var x1 = point2[0];
-      var x2 = point1[0];
-      var y1 = point2[1];
-      var y2 = point1[1];
-    } else {
-      var x1 = point1[0];
-      var x2 = point2[0];
-      var y1 = point1[1];
-      var y2 = point2[1];
+      let temp = point1;
+      point1 = point2;
+      point2 = temp;
     }
-    for(let y = y1; y <= y2; y+= (1/accuracy)) {
+    for(let y = point1[1]; y <= point2[1]; y+=1) {
+      let yfin = Math.round(y);
+      let xfin = Math.round(point1[0]);
+      array[xfin][yfin] = color;
+    }
+  //Case for y being iterated variable
+  } else if(m > 1 || m < -1) {
+    if(point1[1] > point2[1]) {
+      let temp = point1;
+      point1 = point2;
+      point2 = temp;
+    }
+    for(let y = point1[1]; y <= point2[1]; y+= (1/accuracy)) {
       let x;
       x = (y - b)/m
       let yfin = Math.round(y);
       let xfin = Math.round(x);
       array[xfin][yfin] = color;
     }
-  } else if(m == Infinity) {
-    if(point1[1] > point2[1]) {
-      var y1 = point2[1];
-      var y2 = point1[1];
-    } else {
-      var y1 = point1[1];
-      var y2 = point2[1];
-    }
-    for(let y = y1; y <= y2; y+=1) {
-      array[point1[0]][y] = color;
-    }
+  //Case for x being iterated variable
   } else {
-    var b = y1 - (m * x1);
-    for(let x = x1; x <= x2; x+= (1/accuracy)) {
+    if(point1[0] > point2[0]) {
+      let temp = point1;
+      point1 = point2;
+      point2 = temp;
+    }
+    for(let x = point1[0]; x <= point2[0]; x+= (1/accuracy)) {
       let y;
       y = (m * x) + b
       let yfin = Math.round(y);
@@ -77,12 +68,14 @@ function drawLine(array, point1, point2, color) {
   }
 }
 
+
 //Draws a triangle between three points
 function lineTrig(array, point1, point2, point3, color) {
   drawLine(array, point1, point2, color);
   drawLine(array, point2, point3, color);
   drawLine(array, point3, point1, color);
 }
+
 
 //Order three points based on their y value
 function orderTrig(point1, point2, point3) {
@@ -105,6 +98,7 @@ function orderTrig(point1, point2, point3) {
   return [point1, point2, point3];
 }
 
+
 //Fill a triangle with a flat bottom edge
 function fillBottomTrig(array, point1, point2, point3, color) {
   let newp = orderTrig(point1, point2, point3);
@@ -124,6 +118,7 @@ function fillBottomTrig(array, point1, point2, point3, color) {
     curx2 += invSlope2;
   }
 }
+
 
 //Fill a triangle with a flat top edge
 function fillTopTrig(array, point1, point2, point3, color) {
@@ -145,6 +140,7 @@ function fillTopTrig(array, point1, point2, point3, color) {
   }
 }
 
+
 //Fill any triangle
 function fillTrig(array, point1, point2, point3, color) {
   let temppoints = orderTrig(point1, point2, point3);
@@ -165,6 +161,8 @@ function fillTrig(array, point1, point2, point3, color) {
   }
 }
 
+
+//Complete triangle drawing function
 function makeTrig(array, point1, point2, point3, color1, color2) {
   if(color1 != "none") {
     lineTrig(array, point1, point2, point3, color1);
@@ -174,4 +172,64 @@ function makeTrig(array, point1, point2, point3, color1, color2) {
   }
 }
 
-export{ makeArray, screenFill, drawLine, lineTrig, fillTrig, makeTrig }
+
+//Project points from 3d area onto 2d plane to display them
+function projectPoints(points, width, height) {
+  let proj_points = [];
+  for(let i = 0; i < points.length; i++) {
+    proj_points[i] = [(points[i][0]/(-1 * points[i][2])), (points[i][1]/(1 * points[i][2]))];
+    proj_points[i][0] = width * (1 + proj_points[i][0])/2;
+    proj_points[i][1] = height * (1 + proj_points[i][1])/2;
+  }
+  return proj_points;
+}
+
+
+//Draws cube given projected coordinates
+function drawProjectedCube(array, points, color) {
+  //Bottom face's edges
+  drawLine(array, points[0], points[1], color);
+  drawLine(array, points[1], points[2], color);
+  drawLine(array, points[2], points[3], color);
+  drawLine(array, points[3], points[0], color);
+  //Side edges
+  drawLine(array, points[0], points[4], color);
+  drawLine(array, points[1], points[5], color);
+  drawLine(array, points[2], points[6], color);
+  drawLine(array, points[3], points[7], color);
+  //Top face's edges
+  drawLine(array, points[4], points[5], color);
+  drawLine(array, points[5], points[6], color);
+  drawLine(array, points[6], points[7], color);
+  drawLine(array, points[7], points[4], color);
+}
+
+
+//Draws cube given all coordinates
+function drawCoordCube(array, points, color) {
+  let width = array.length;
+  let height = array[0].length;
+  let proj_points = projectPoints(points, width, height);
+  drawProjectedCube(array, proj_points, color);
+}
+
+
+//Draws cube given center and side length
+function drawCube(array, center, side, color) {
+  let points = [];
+  
+  points[0] = [center[0] - side/2, center[1] - side/2, center[2] + side/2];
+  points[1] = [center[0] + side/2, center[1] - side/2, center[2] + side/2];
+  points[2] = [center[0] + side/2, center[1] - side/2, center[2] - side/2];
+  points[3] = [center[0] - side/2, center[1] - side/2, center[2] - side/2];
+  points[4] = [center[0] - side/2, center[1] + side/2, center[2] + side/2];
+  points[5] = [center[0] + side/2, center[1] + side/2, center[2] + side/2];
+  points[6] = [center[0] + side/2, center[1] + side/2, center[2] - side/2];
+  points[7] = [center[0] - side/2, center[1] + side/2, center[2] - side/2];
+
+  drawCoordCube(array, points, color);
+}
+
+
+//Export all functions
+export{ makeArray, screenFill, drawLine, lineTrig, fillTrig, makeTrig, projectPoints, drawCube}
