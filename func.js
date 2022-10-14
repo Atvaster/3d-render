@@ -216,22 +216,41 @@ function drawCoordCube(array, points, color) {
 
 //Draws cube given center and side length
 function drawCube(array, center, side, color) {
-  let points = [];
-  
-  points[0] = [center[0] - side/2, center[1] - side/2, center[2] + side/2];
-  points[1] = [center[0] + side/2, center[1] - side/2, center[2] + side/2];
-  points[2] = [center[0] + side/2, center[1] - side/2, center[2] - side/2];
-  points[3] = [center[0] - side/2, center[1] - side/2, center[2] - side/2];
-  points[4] = [center[0] - side/2, center[1] + side/2, center[2] + side/2];
-  points[5] = [center[0] + side/2, center[1] + side/2, center[2] + side/2];
-  points[6] = [center[0] + side/2, center[1] + side/2, center[2] - side/2];
-  points[7] = [center[0] - side/2, center[1] + side/2, center[2] - side/2];
-
-  drawCoordCube(array, points, color);
+  drawRotCube(array, center, side, 0, 0, 0, color);
 }
 
 
-//Draw cube function with added rotational parameters
+//Rotate a set of points around center on three axis
+function rotPoints(points, center, rotx, roty, rotz) {
+  //Rot x
+  for(let h = 0; h < points.length; h++) {
+    let dist = Math.sqrt((points[h][1] - center[1])**2 + (points[h][2] - center[2])**2);
+    let ang = Math.atan2(((points[h][2] - center[2])), ((points[h][1] - center[1])))* 180/Math.PI;
+    points[h][1] = center[1] + (dist * (Math.cos((rotx + ang) * Math.PI/180)));
+    points[h][2] = center[2] + (dist * (Math.sin((rotx + ang) * Math.PI/180)));
+  }
+
+  //Rot y
+  for(let j = 0; j < points.length; j++) {
+    let dist = Math.sqrt((points[j][0] - center[0])**2 + (points[j][2] - center[2])**2);
+    let ang = Math.atan2(((points[j][2] - center[2])), ((points[j][0] - center[0])))* 180/Math.PI;
+    points[j][0] = center[0] + (dist * (Math.cos((roty + ang) * Math.PI/180)));
+    points[j][2] = center[2] + (dist * (Math.sin((roty + ang) * Math.PI/180)));
+  }
+
+  //Rot z
+  for(let i = 0; i < points.length; i++) {
+    let dist = Math.sqrt((points[i][0] - center[0])**2 + (points[i][1] - center[1])**2);
+    let ang = Math.atan2(((points[i][1] - center[1])), ((points[i][0] - center[0])))*180/Math.PI;
+    points[i][0] = center[0] + (dist * (Math.cos((rotz + ang) * Math.PI/180)));
+    points[i][1] = center[1] + (dist * (Math.sin((rotz + ang) * Math.PI/180)));
+  }
+
+  return points;
+}
+
+
+//Draw cube function with rotational parameters
 function drawRotCube(array, center, side, rotx, roty, rotz, color) {
   let points = [];
   
@@ -244,32 +263,14 @@ function drawRotCube(array, center, side, rotx, roty, rotz, color) {
   points[6] = [center[0] + side/2, center[1] + side/2, center[2] - side/2];
   points[7] = [center[0] - side/2, center[1] + side/2, center[2] - side/2];
 
-  //Rot x
-  for(let j = 0; j < 8; j++) {
-    let dist = Math.sqrt((points[j][1] - center[1])**2 + (points[j][2] - center[2])**2);
-    let ang = Math.atan2(((points[j][2] - center[2])), ((points[j][1] - center[1])))* 180/Math.PI;
-    points[j][1] = center[1] + (dist * (Math.cos((roty + ang) * Math.PI/180)));
-    points[j][2] = center[2] + (dist * (Math.sin((roty + ang) * Math.PI/180)));
-  }
+  points = rotPoints(points, center, rotx, roty, rotz);
 
-  //Rot y
-  for(let j = 0; j < 8; j++) {
-    let dist = Math.sqrt((points[j][0] - center[0])**2 + (points[j][2] - center[2])**2);
-    let ang = Math.atan2(((points[j][2] - center[2])), ((points[j][0] - center[0])))* 180/Math.PI;
-    points[j][0] = center[0] + (dist * (Math.cos((roty + ang) * Math.PI/180)));
-    points[j][2] = center[2] + (dist * (Math.sin((roty + ang) * Math.PI/180)));
-  }
-
-  //Rot z
-  for(let i = 0; i < 8; i++) {
-    let dist = Math.sqrt((points[i][0] - center[0])**2 + (points[i][1] - center[1])**2);
-    let ang = Math.atan2(((points[i][1] - center[1])), ((points[i][0] - center[0])))*180/Math.PI;
-    points[i][0] = center[0] + (dist * (Math.cos((rotz + ang) * Math.PI/180)));
-    points[i][1] = center[1] + (dist * (Math.sin((rotz + ang) * Math.PI/180)));
-  }
   drawCoordCube(array, points, color);
 }
 
 
+
+
+
 //Export all functions
-export{ makeArray, screenFill, drawLine, lineTrig, fillTrig, makeTrig, projectPoints, drawCube, drawRotCube }
+export{ makeArray, screenFill, drawLine, lineTrig, fillTrig, makeTrig, projectPoints, drawCube, drawRotCube, rotPoints }

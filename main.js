@@ -1,5 +1,5 @@
 //import simple functions for drawing on screen
-import { makeArray, screenFill, drawLine, lineTrig, fillTrig, makeTrig, projectPoints, drawCube, drawRotCube } from "./func.js";
+import { makeArray, screenFill, drawLine, lineTrig, fillTrig, makeTrig, projectPoints, drawCube, drawRotCube, rotPoints } from "./func.js";
 
 window.onload = function() {
   //Initializing canvas vars
