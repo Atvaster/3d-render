@@ -1,5 +1,5 @@
 //import simple functions for drawing on screen
-import { makeArray, screenFill, drawLine, lineTrig, fillTrig, makeTrig, projectPoints, drawCube } from "./simpleFunc.js";
+import { makeArray, screenFill, drawLine, lineTrig, fillTrig, makeTrig, projectPoints, drawCube, drawRotCube } from "./func.js";
 
 window.onload = function() {
   //Initializing canvas vars
@@ -12,21 +12,6 @@ window.onload = function() {
   var imageData = ctx.createImageData(width, height);
   //2d array that I will write to.
   var pixels = makeArray(height, width, 0);
-  
-  //Color presets
-  var black = [  0,   0,   0];
-  var red   = [255,   0,   0];
-  var green = [  0, 255,   0];
-  var blue  = [  0,   0, 255];
-  var white = [255, 255, 255];
-  
-  screenFill(pixels, black);
-  drawCube(pixels, [-3, -3, -10], 3, white);
-  drawCube(pixels, [-3, 3, -10], 3, white);
-  drawCube(pixels, [3, -3, -10], 3, white);
-  drawCube(pixels, [3, 3, -10], 3, white);
-  //drawCube(pixels, [0, 0, -10], 3, white);
-
 
 
   //Turn pixel data into 1d array for use in canvas
@@ -41,13 +26,53 @@ window.onload = function() {
       }
     }
   }
+  
 
-  //Main loop of draw
-  function main() {
-    window.requestAnimationFrame(main);
-    convertData();
-    ctx.putImageData(imageData, 0, 0);
+
+  //Color presets
+  var black = [  0,   0,   0];
+  var red   = [255,   0,   0];
+  var green = [  0, 255,   0];
+  var blue  = [  0,   0, 255];
+  var white = [255, 255, 255];
+  
+  screenFill(pixels, black);
+
+
+  //Functoin for all logic
+  function main(frame) {
+    screenFill(pixels, black);
+    drawRotCube(pixels, [1, 0, -5], 1, frame%360, frame%360, frame%360, white);
   }
-  main(0);
+
+  var frame = 1
+  //Function to push frames to screen
+  function push() {
+    
+    //Run main logic function and see the time it takes to run it
+    let t0 = window.performance.now();
+    main(frame);
+    let t1 = window.performance.now();
+
+    //Convert 2d array to 1d array
+    convertData();
+
+    //Waits until screen is ready to be refreshed
+    window.requestAnimationFrame(push);
+    //Puts 1d array onto canvas
+    ctx.putImageData(imageData, 0, 0);
+
+    //Calculate calc fps and update it on screen every 5 draw frames
+    if(frame%5 == 0) {
+      let timecalc = t1-t0;
+      let fps = Math.round(1000/timecalc);
+      document.getElementById("fps").innerHTML = "fps: " + fps;
+    }
+    
+    //Print frame number in console (useful for debugging)
+    //console.log("frame:" + frame);
+    frame += 1;
+  }
+  push(0);
 }
 
