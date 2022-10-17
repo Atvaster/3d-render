@@ -1,3 +1,10 @@
+//Colors
+var black = [  0,   0,   0];
+var red   = [255,   0,   0];
+var green = [  0, 255,   0];
+var blue  = [  0,   0, 255];
+var white = [255, 255, 255];
+
 //Function I stole off the internet to make 2d arrays of a given size
 function makeArray(w, h, val) {
   var arr = [];
@@ -24,7 +31,7 @@ function drawLine(array, point1, point2, color) {
   let accuracy = 2;
   var m = (point2[1] - point1[1])/(point2[0] - point1[0]);
   var b = point1[1] - (m * point1[0]);
-  
+
   //Case for vertical line
   if(m == Infinity || m == -Infinity) {
     if(point1[1] > point2[1]) {
@@ -111,7 +118,7 @@ function fillBottomTrig(array, point1, point2, point3, color) {
 
   let curx1 = point1[0];
   let curx2 = point1[0];
-  
+
   for(let scanY = point1[1]; scanY <= point2[1]; scanY++) {
     drawLine(array, [curx1, scanY], [curx2, scanY], color);
     curx1 += invSlope1;
@@ -132,7 +139,7 @@ function fillTopTrig(array, point1, point2, point3, color) {
 
   let curx1 = point3[0];
   let curx2 = point3[0];
-  
+
   for(let scanY = point3[1]; scanY > point1[1]; scanY--) {
     drawLine(array, [curx1, scanY], [curx2, scanY], color);
     curx1 -= invSlope1;
@@ -253,7 +260,7 @@ function rotPoints(points, center, rotx, roty, rotz) {
 //Draw cube function with rotational parameters
 function drawRotCube(array, center, side, rotx, roty, rotz, color) {
   let points = [];
-  
+
   points[0] = [center[0] - side/2, center[1] - side/2, center[2] + side/2];
   points[1] = [center[0] + side/2, center[1] - side/2, center[2] + side/2];
   points[2] = [center[0] + side/2, center[1] - side/2, center[2] - side/2];

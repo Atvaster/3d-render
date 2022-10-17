@@ -26,7 +26,6 @@ window.onload = function() {
       }
     }
   }
-  
 
 
   //Color presets
@@ -35,44 +34,50 @@ window.onload = function() {
   var green = [  0, 255,   0];
   var blue  = [  0,   0, 255];
   var white = [255, 255, 255];
-  
-  screenFill(pixels, black);
 
 
-  //Functoin for all logic
-  function main(frame) {
+  //Function for all logic
+  function main(curTime) {
+    let rot = curTime * 30/1000
     screenFill(pixels, black);
-    drawRotCube(pixels, [1, 0, -5], 1, frame%360, frame%360, frame%360, white);
+    drawRotCube(pixels, [1, 0, -5], 1, rot%360, rot%360, rot%360, white);
+
+    calcFrame += 1;
   }
 
-  var frame = 1
+
+  //Frame init
+  var drawFrame = 1;
+  var calcFrame = 1;
+
   //Function to push frames to screen
   function push() {
-    
+    //Calc mills from start of main loop to now
+    let time = window.performance.now() - startTime;
+
     //Run main logic function and see the time it takes to run it
     let t0 = window.performance.now();
-    main(frame);
+    main(time);
     let t1 = window.performance.now();
 
     //Convert 2d array to 1d array
     convertData();
-
     //Waits until screen is ready to be refreshed
     window.requestAnimationFrame(push);
     //Puts 1d array onto canvas
     ctx.putImageData(imageData, 0, 0);
 
     //Calculate calc fps and update it on screen every 5 draw frames
-    if(frame%5 == 0) {
+    if(drawFrame%5 == 0) {
       let timecalc = t1-t0;
       let fps = Math.round(1000/timecalc);
       document.getElementById("fps").innerHTML = "fps: " + fps;
     }
-    
     //Print frame number in console (useful for debugging)
     //console.log("frame:" + frame);
-    frame += 1;
+    drawFrame += 1;
   }
-  push(0);
+  var startTime = window.performance.now();
+  push(0, startTime);
 }
 
