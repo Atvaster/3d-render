@@ -40,7 +40,8 @@ window.onload = function() {
   function main(curTime) {
     let rot = curTime * 30/1000
     screenFill(pixels, black);
-    drawRotCube(pixels, [1, 0, -5], 1, rot%360, rot%360, rot%360, white);
+    drawRotCube(pixels, [0, 0, -5], 1, rot%360, rot%360, rot%360, white);
+    //makeTrig(pixels, [100, 100], [200, 200], [500, 50], white, white);
 
     calcFrame += 1;
   }

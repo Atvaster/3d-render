@@ -26,6 +26,14 @@ function screenFill(array, color) {
   }
 }
 
+function pixel(array, x, y, value) {
+  if(x >= 0 && y >= 0 && x < array.length && y < array[0].length) {
+    array[x][y] = value;
+  }
+}
+
+//function zpixel(array, x, y, value, zbuf)
+
 //Draws line from one point to another
 function drawLine(array, point1, point2, color) {
   let accuracy = 2;
@@ -42,7 +50,8 @@ function drawLine(array, point1, point2, color) {
     for(let y = point1[1]; y <= point2[1]; y+=1) {
       let yfin = Math.round(y);
       let xfin = Math.round(point1[0]);
-      array[xfin][yfin] = color;
+      pixel(array, xfin, yfin, color);
+      //array[xfin][yfin] = color;
     }
   //Case for y being iterated variable
   } else if(m > 1 || m < -1) {
@@ -51,12 +60,13 @@ function drawLine(array, point1, point2, color) {
       point1 = point2;
       point2 = temp;
     }
-    for(let y = point1[1]; y <= point2[1]; y+= (1/accuracy)) {
+    for(let y = point1[1]; y <= point2[1]; y+=1) {
       let x;
       x = (y - b)/m
       let yfin = Math.round(y);
       let xfin = Math.round(x);
-      array[xfin][yfin] = color;
+      pixel(array, xfin, yfin, color);
+      //array[xfin][yfin] = color;
     }
   //Case for x being iterated variable
   } else {
@@ -65,12 +75,13 @@ function drawLine(array, point1, point2, color) {
       point1 = point2;
       point2 = temp;
     }
-    for(let x = point1[0]; x <= point2[0]; x+= (1/accuracy)) {
+    for(let x = point1[0]; x <= point2[0]; x+=1) {
       let y;
       y = (m * x) + b
       let yfin = Math.round(y);
       let xfin = Math.round(x);
-      array[xfin][yfin] = color;
+      pixel(array, xfin, yfin, color);
+      //array[xfin][yfin] = color;
     }
   }
 }
@@ -84,31 +95,24 @@ function lineTrig(array, point1, point2, point3, color) {
 }
 
 
-//Order three points based on their y value
-function orderTrig(point1, point2, point3) {
-  if(point1[1] <= point2[1] && point1[1] <= point3[1]) {
-    if(point2[1] > point3[1]) {
-      let temp = point2;
-      point2 = point3;
-      point3 = temp;
-    }
-  } else if(point2[1] <= point3[1]){
-    let temp = point2;
-    point2 = point1;
-    point1 = temp;
-    if(point2[1] > point3[1]) {
-      let temp2 = point3;
-      point3 = point2;
-      point2 = temp2;
+//Bubble sort points in array based on y value
+function orderPoints(points) {
+  for(let i = 0; i < points.length - 1; i++) {
+    for(let j = 0; j < points.length - i - 1; j++) {
+      if(points[j][1] > points[j+1][1]) {
+        let temp = points[j];
+        points[j] = points[j+1];
+        points[j+1] = temp;
+      }
     }
   }
-  return [point1, point2, point3];
+  return points;
 }
 
 
 //Fill a triangle with a flat bottom edge
 function fillBottomTrig(array, point1, point2, point3, color) {
-  let newp = orderTrig(point1, point2, point3);
+  let newp = orderPoints([point1, point2, point3]);
   point1 = newp[0];
   point2 = newp[1];
   point3 = newp[2];
@@ -129,7 +133,7 @@ function fillBottomTrig(array, point1, point2, point3, color) {
 
 //Fill a triangle with a flat top edge
 function fillTopTrig(array, point1, point2, point3, color) {
-  let newp = orderTrig(point1, point2, point3);
+  let newp = orderPoints([point1, point2, point3]);
   point1 = newp[0];
   point2 = newp[1];
   point3 = newp[2];
@@ -150,7 +154,7 @@ function fillTopTrig(array, point1, point2, point3, color) {
 
 //Fill any triangle
 function fillTrig(array, point1, point2, point3, color) {
-  let temppoints = orderTrig(point1, point2, point3);
+  let temppoints = orderPoints([point1, point2, point3]);
   point1 = temppoints[0];
   point2 = temppoints[1];
   point3 = temppoints[2];
@@ -180,6 +184,14 @@ function makeTrig(array, point1, point2, point3, color1, color2) {
 }
 
 
+//Fill quads by splitting into two triangles
+function fillQuad(array, points, color) {
+  points = orderPoints(points);
+  fillTrig(array, points[0], points[1], points[2], color);
+  fillTrig(array, points[1], points[2], points[3], color);
+}
+
+
 //Project points from 3d area onto 2d plane to display them
 function projectPoints(points, width, height) {
   let proj_points = [];
@@ -187,6 +199,7 @@ function projectPoints(points, width, height) {
     proj_points[i] = [(points[i][0]/(-1 * points[i][2])), (points[i][1]/(1 * points[i][2]))];
     proj_points[i][0] = width * (1 + proj_points[i][0])/2;
     proj_points[i][1] = height * (1 + proj_points[i][1])/2;
+    proj_points[i][2] = points[i][2];
   }
   return proj_points;
 }
@@ -211,13 +224,25 @@ function drawProjectedCube(array, points, color) {
   drawLine(array, points[7], points[4], color);
 }
 
+function drawColoredCube(array, points) {
+  fillQuad(array, [points[0], points[1], points[2], points[3]], red);
+  fillQuad(array, [points[4], points[5], points[6], points[7]], red);
+
+  fillQuad(array, [points[0], points[1], points[4], points[5]], blue);
+  fillQuad(array, [points[3], points[2], points[7], points[6]], blue);
+
+  fillQuad(array, [points[3], points[0], points[7], points[4]], green);
+  fillQuad(array, [points[1], points[2], points[5], points[6]], green);
+}
+
 
 //Draws cube given all coordinates
 function drawCoordCube(array, points, color) {
   let width = array.length;
   let height = array[0].length;
   let proj_points = projectPoints(points, width, height);
-  drawProjectedCube(array, proj_points, color);
+  //drawProjectedCube(array, proj_points, color);
+  drawColoredCube(array, proj_points);
 }
 
 
@@ -273,6 +298,7 @@ function drawRotCube(array, center, side, rotx, roty, rotz, color) {
   points = rotPoints(points, center, rotx, roty, rotz);
 
   drawCoordCube(array, points, color);
+
 }
 
 
