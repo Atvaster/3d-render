@@ -1,5 +1,5 @@
 //import simple functions for drawing on screen
-import { makeArray, screenFill, drawLine, lineTrig, fillTrig, makeTrig, projectPoints, drawCube, drawRotCube, rotPoints } from "./func.js";
+import { Screen } from "./func.js";
 
 window.onload = function() {
   //Initializing canvas vars
@@ -10,8 +10,12 @@ window.onload = function() {
   var height = c.height;
   //Per-pixel control of canvas
   var imageData = ctx.createImageData(width, height);
+
+  //Screen init object
+  const myScreen = new Screen();
+
   //2d array that I will write to.
-  var pixels = makeArray(height, width, 0);
+  var pixels = myScreen.makeArray(height, width, 0);
 
 
   //Turn pixel data into 1d array for use in canvas
@@ -36,16 +40,16 @@ window.onload = function() {
   var white = [255, 255, 255];
 
 
+
   //Function for all logic
   function main(curTime) {
     let rot = curTime * 30/1000
-    screenFill(pixels, black);
-    drawRotCube(pixels, [0, 0, -5], 1, rot%360, rot%360, rot%360, white);
+    myScreen.screenFill(pixels, black);
+    myScreen.drawRotCube(pixels, [0, 0, -5], 1, rot%360, rot%360, rot%360, white);
     //makeTrig(pixels, [100, 100], [200, 200], [500, 50], white, white);
 
     calcFrame += 1;
   }
-
 
   //Frame init
   var drawFrame = 1;
