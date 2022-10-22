@@ -1,3 +1,15 @@
+//Function to make 2d arrays of a given size
+function makeArray(w, h, val) {
+  var arr = [];
+  for(let i = 0; i < h; i++) {
+      arr[i] = [];
+      for(let j = 0; j < w; j++) {
+          arr[i][j] = val;
+      }
+  }
+  return arr;
+}
+
 class Screen {
   //Colors
   black = [  0,   0,   0];
@@ -5,21 +17,29 @@ class Screen {
   green = [  0, 255,   0];
   blue  = [  0,   0, 255];
   white = [255, 255, 255];
+  array = [];
 
-  //Function I stole off the internet to make 2d arrays of a given size
-  makeArray(w, h, val) {
-    var arr = [];
-    for(let i = 0; i < h; i++) {
-        arr[i] = [];
-        for(let j = 0; j < w; j++) {
-            arr[i][j] = val;
-        }
+  constructor(array) {
+    this.array = array;
+  }
+
+  //Turn pixel data into 1d array for use in canvas
+  convertData(imgd) {
+    let array = this.array;
+    for(let x = 0; x < array.length - 1; x++) {
+      for(let y = 0; y < array[x].length - 1; y++) {
+        let pixelIndex = (y * array.length + x) * 4;
+        imgd.data[pixelIndex] = array[x][y][0];
+        imgd.data[pixelIndex + 1] = array[x][y][1];
+        imgd.data[pixelIndex + 2] = array[x][y][2];
+        imgd.data[pixelIndex + 3] = 255;
+      }
     }
-    return arr;
   }
 
   //Fills the whole array with one solid color
-  screenFill(array, color) {
+  screenFill(color) {
+    let array = this.array;
     for(let x = 0; x < array.length - 1; x++) {
       for(let y = 0; y < array[x].length - 1; y++) {
         array[x][y] = color;
@@ -27,7 +47,8 @@ class Screen {
     }
   }
 
-  pixel(array, x, y, value) {
+  pixel(x, y, value) {
+    let array = this.array;
     if(x >= 0 && y >= 0 && x < array.length && y < array[0].length) {
       array[x][y] = value;
     }
@@ -36,7 +57,7 @@ class Screen {
   //function zpixel(array, x, y, value, zbuf)
 
   //Draws line from one point to another
-  drawLine(array, point1, point2, color) {
+  drawLine(point1, point2, color) {
     var m = (point2[1] - point1[1])/(point2[0] - point1[0]);
     var b = point1[1] - (m * point1[0]);
 
@@ -50,7 +71,7 @@ class Screen {
       for(let y = point1[1]; y <= point2[1]; y+=1) {
         let yfin = Math.round(y);
         let xfin = Math.round(point1[0]);
-        this.pixel(array, xfin, yfin, color);
+        this.pixel(xfin, yfin, color);
         //array[xfin][yfin] = color;
       }
     //Case for y being iterated variable
@@ -65,7 +86,7 @@ class Screen {
         x = (y - b)/m
         let yfin = Math.round(y);
         let xfin = Math.round(x);
-        this.pixel(array, xfin, yfin, color);
+        this.pixel(xfin, yfin, color);
         //array[xfin][yfin] = color;
       }
     //Case for x being iterated variable
@@ -80,7 +101,7 @@ class Screen {
         y = (m * x) + b
         let yfin = Math.round(y);
         let xfin = Math.round(x);
-        this.pixel(array, xfin, yfin, color);
+        this.pixel(xfin, yfin, color);
         //array[xfin][yfin] = color;
       }
     }
@@ -88,10 +109,10 @@ class Screen {
 
 
   //Draws a triangle between three points
-  lineTrig(array, point1, point2, point3, color) {
-    this.drawLine(array, point1, point2, color);
-    this.drawLine(array, point2, point3, color);
-    this.drawLine(array, point3, point1, color);
+  lineTrig(point1, point2, point3, color) {
+    this.drawLine(point1, point2, color);
+    this.drawLine(point2, point3, color);
+    this.drawLine(point3, point1, color);
   }
 
 
@@ -111,7 +132,7 @@ class Screen {
 
 
   //Fill a triangle with a flat bottom edge
-  fillBottomTrig(array, point1, point2, point3, color) {
+  fillBottomTrig(point1, point2, point3, color) {
     let newp = this.orderPoints([point1, point2, point3]);
     point1 = newp[0];
     point2 = newp[1];
@@ -124,7 +145,7 @@ class Screen {
     let curx2 = point1[0];
 
     for(let scanY = point1[1]; scanY <= point2[1]; scanY++) {
-      this.drawLine(array, [curx1, scanY], [curx2, scanY], color);
+      this.drawLine([curx1, scanY], [curx2, scanY], color);
       curx1 += invSlope1;
       curx2 += invSlope2;
     }
@@ -132,7 +153,7 @@ class Screen {
 
 
   //Fill a triangle with a flat top edge
-  fillTopTrig(array, point1, point2, point3, color) {
+  fillTopTrig(point1, point2, point3, color) {
     let newp = this.orderPoints([point1, point2, point3]);
     point1 = newp[0];
     point2 = newp[1];
@@ -145,7 +166,7 @@ class Screen {
     let curx2 = point3[0];
 
     for(let scanY = point3[1]; scanY > point1[1]; scanY--) {
-      this.drawLine(array, [curx1, scanY], [curx2, scanY], color);
+      this.drawLine([curx1, scanY], [curx2, scanY], color);
       curx1 -= invSlope1;
       curx2 -= invSlope2;
     }
@@ -153,42 +174,42 @@ class Screen {
 
 
   //Fill any triangle
-  fillTrig(array, point1, point2, point3, color) {
+  fillTrig(point1, point2, point3, color) {
     let temppoints = this.orderPoints([point1, point2, point3]);
     point1 = temppoints[0];
     point2 = temppoints[1];
     point3 = temppoints[2];
 
     if(point2[1] == point3[1]) {
-      this.fillBottomTrig(array, point1, point2, point3, color);
+      this.fillBottomTrig(point1, point2, point3, color);
     }else if(point1[1] == point2[1]) {
-      this.fillTopTrig(array, point1, point2, point3, color);
+      this.fillTopTrig(point1, point2, point3, color);
     } else {
       let m = (point3[1] - point1[1])/(point3[0] - point1[0]);
       let b = point1[1] - m * point1[0];
       let point4 = [(point2[1] - b)/m, point2[1]];
-      this.fillBottomTrig(array, point1, point2, point4, color);
-      this.fillTopTrig(array, point2, point4, point3, color);
+      this.fillBottomTrig(point1, point2, point4, color);
+      this.fillTopTrig(point2, point4, point3, color);
     }
   }
 
 
   //Complete triangle drawing function
-  makeTrig(array, point1, point2, point3, color1, color2) {
+  makeTrig(point1, point2, point3, color1, color2) {
     if(color1 != "none") {
-      this.lineTrig(array, point1, point2, point3, color1);
+      this.lineTrig(point1, point2, point3, color1);
     }
     if(color2 != "none") {
-      this.fillTrig(array, point1, point2, point3, color2);
+      this.fillTrig(point1, point2, point3, color2);
     }
   }
 
 
   //Fill quads by splitting into two triangles
-  fillQuad(array, points, color) {
+  fillQuad(points, color) {
     points = this.orderPoints(points);
-    this.fillTrig(array, points[0], points[1], points[2], color);
-    this.fillTrig(array, points[1], points[2], points[3], color);
+    this.fillTrig(points[0], points[1], points[2], color);
+    this.fillTrig(points[1], points[2], points[3], color);
   }
 
 
@@ -206,49 +227,50 @@ class Screen {
 
 
   //Draws cube given projected coordinates
-  drawProjectedCube(array, points, color) {
+  drawProjectedCube(points, color) {
     //Bottom face's edges
-    this.this.drawLine(array, points[0], points[1], color);
-    this.drawLine(array, points[1], points[2], color);
-    this.drawLine(array, points[2], points[3], color);
-    this.drawLine(array, points[3], points[0], color);
+    this.this.drawLine(points[0], points[1], color);
+    this.drawLine(points[1], points[2], color);
+    this.drawLine(points[2], points[3], color);
+    this.drawLine(points[3], points[0], color);
     //Side edges
-    this.drawLine(array, points[0], points[4], color);
-    this.drawLine(array, points[1], points[5], color);
-    this.drawLine(array, points[2], points[6], color);
-    this.drawLine(array, points[3], points[7], color);
+    this.drawLine(points[0], points[4], color);
+    this.drawLine(points[1], points[5], color);
+    this.drawLine(points[2], points[6], color);
+    this.drawLine(points[3], points[7], color);
     //Top face's edges
-    this.drawLine(array, points[4], points[5], color);
-    this.drawLine(array, points[5], points[6], color);
-    this.drawLine(array, points[6], points[7], color);
-    this.drawLine(array, points[7], points[4], color);
+    this.drawLine(points[4], points[5], color);
+    this.drawLine(points[5], points[6], color);
+    this.drawLine(points[6], points[7], color);
+    this.drawLine(points[7], points[4], color);
   }
 
-  drawColoredCube(array, points) {
-    this.fillQuad(array, [points[0], points[1], points[2], points[3]], this.red);
-    this.fillQuad(array, [points[4], points[5], points[6], points[7]], this.red);
+  drawColoredCube(points) {
+    this.fillQuad([points[0], points[1], points[2], points[3]], this.red);
+    this.fillQuad([points[4], points[5], points[6], points[7]], this.red);
 
-    this.fillQuad(array, [points[0], points[1], points[4], points[5]], this.blue);
-    this.fillQuad(array, [points[3], points[2], points[7], points[6]], this.blue);
+    this.fillQuad([points[0], points[1], points[4], points[5]], this.blue);
+    this.fillQuad([points[3], points[2], points[7], points[6]], this.blue);
 
-    this.fillQuad(array, [points[3], points[0], points[7], points[4]], this.green);
-    this.fillQuad(array, [points[1], points[2], points[5], points[6]], this.green);
+    this.fillQuad([points[3], points[0], points[7], points[4]], this.green);
+    this.fillQuad([points[1], points[2], points[5], points[6]], this.green);
   }
 
 
   //Draws cube given all coordinates
-  drawCoordCube(array, points, color) {
+  drawCoordCube(points, color) {
+    let array = this.array;
     let width = array.length;
     let height = array[0].length;
     let proj_points = this.projectPoints(points, width, height);
-    //drawProjectedCube(array, proj_points, color);
-    this.drawColoredCube(array, proj_points);
+    //drawProjectedCube(proj_points, color);
+    this.drawColoredCube(proj_points);
   }
 
 
   //Draws cube given center and side length
-  drawCube(array, center, side, color) {
-    this.drawRotCube(array, center, side, 0, 0, 0, color);
+  drawCube(center, side, color) {
+    this.drawRotCube(center, side, 0, 0, 0, color);
   }
 
 
@@ -283,7 +305,7 @@ class Screen {
 
 
   //Draw cube function with rotational parameters
-  drawRotCube(array, center, side, rotx, roty, rotz, color) {
+  drawRotCube(center, side, rotx, roty, rotz, color) {
     let points = [];
 
     points[0] = [center[0] - side/2, center[1] - side/2, center[2] + side/2];
@@ -297,7 +319,7 @@ class Screen {
 
     points = this.rotPoints(points, center, rotx, roty, rotz);
 
-    this.drawCoordCube(array, points, color);
+    this.drawCoordCube(points, color);
 
   }
 }
@@ -308,4 +330,4 @@ class Screen {
 
 
 //Export all functions
-export { Screen };
+export { Screen, makeArray };

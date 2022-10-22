@@ -1,5 +1,5 @@
 //import simple functions for drawing on screen
-import { Screen } from "./func.js";
+import { Screen, makeArray } from "./func.js";
 
 window.onload = function() {
   //Initializing canvas vars
@@ -11,26 +11,11 @@ window.onload = function() {
   //Per-pixel control of canvas
   var imageData = ctx.createImageData(width, height);
 
-  //Screen init object
-  const myScreen = new Screen();
-
   //2d array that I will write to.
-  var pixels = myScreen.makeArray(height, width, 0);
+  var pixels = makeArray(height, width, 0);
 
-
-  //Turn pixel data into 1d array for use in canvas
-  function convertData() {
-    for(let x = 0; x < pixels.length - 1; x++) {
-      for(let y = 0; y < pixels[x].length - 1; y++) {
-        let pixelIndex = (y * width + x) * 4;
-        imageData.data[pixelIndex] = pixels[x][y][0];
-        imageData.data[pixelIndex + 1] = pixels[x][y][1];
-        imageData.data[pixelIndex + 2] = pixels[x][y][2];
-        imageData.data[pixelIndex + 3] = 255;
-      }
-    }
-  }
-
+  //Screen init object
+  const s = new Screen(pixels);
 
   //Color presets
   var black = [  0,   0,   0];
@@ -44,8 +29,8 @@ window.onload = function() {
   //Function for all logic
   function main(curTime) {
     let rot = curTime * 30/1000
-    myScreen.screenFill(pixels, black);
-    myScreen.drawRotCube(pixels, [0, 0, -5], 1, rot%360, rot%360, rot%360, white);
+    s.screenFill(black);
+    s.drawRotCube([0, 0, -5], 1, rot%360, rot%360, rot%360, white);
     //makeTrig(pixels, [100, 100], [200, 200], [500, 50], white, white);
 
     calcFrame += 1;
@@ -66,7 +51,7 @@ window.onload = function() {
     let t1 = window.performance.now();
 
     //Convert 2d array to 1d array
-    convertData();
+    s.convertData(imageData);
     //Waits until screen is ready to be refreshed
     window.requestAnimationFrame(push);
     //Puts 1d array onto canvas
