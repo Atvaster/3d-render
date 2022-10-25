@@ -12,7 +12,7 @@ window.onload = function() {
   var imageData = ctx.createImageData(width, height);
 
   //2d array that I will write to.
-  var pixels = makeArray(height, width, 0);
+  var pixels = makeArray(height, width, 0); //width and height swapped for [x][y] to be the syntax
 
   //Screen init object
   const s = new Screen(pixels);
@@ -34,6 +34,7 @@ window.onload = function() {
     //makeTrig(pixels, [100, 100], [200, 200], [500, 50], white, white);
 
     calcFrame += 1;
+    s.zClear();
   }
 
   //Frame init

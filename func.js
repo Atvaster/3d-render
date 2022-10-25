@@ -11,24 +11,41 @@ function makeArray(w, h, val) {
 }
 
 class Screen {
+  //Main array
+  array = [];
+
+  //
+  zbuff = [];
+
+  //Size of screen
+  width;
+  height;
+
+  //Misc stuff
+  farclip = 99999;
+
   //Colors
   black = [  0,   0,   0];
   red   = [255,   0,   0];
   green = [  0, 255,   0];
   blue  = [  0,   0, 255];
   white = [255, 255, 255];
-  array = [];
+
+
 
   constructor(array) {
     this.array = array;
+    this.width = array.length;
+    this.height = array[0].length;
+    this.zbuff = makeArray(this.height, this.width, this.farclip); //width and height swapped for [x][y] to be the syntax
   }
 
   //Turn pixel data into 1d array for use in canvas
   convertData(imgd) {
     let array = this.array;
-    for(let x = 0; x < array.length - 1; x++) {
-      for(let y = 0; y < array[x].length - 1; y++) {
-        let pixelIndex = (y * array.length + x) * 4;
+    for(let x = 0; x < this.width - 1; x++) {
+      for(let y = 0; y < this.height - 1; y++) {
+        let pixelIndex = (y * this.width + x) * 4;
         imgd.data[pixelIndex] = array[x][y][0];
         imgd.data[pixelIndex + 1] = array[x][y][1];
         imgd.data[pixelIndex + 2] = array[x][y][2];
@@ -40,26 +57,46 @@ class Screen {
   //Fills the whole array with one solid color
   screenFill(color) {
     let array = this.array;
-    for(let x = 0; x < array.length - 1; x++) {
-      for(let y = 0; y < array[x].length - 1; y++) {
+    for(let x = 0; x < this.width - 1; x++) {
+      for(let y = 0; y < this.height - 1; y++) {
         array[x][y] = color;
       }
     }
   }
 
-  pixel(x, y, value) {
-    let array = this.array;
-    if(x >= 0 && y >= 0 && x < array.length && y < array[0].length) {
-      array[x][y] = value;
+  zClear() {
+    let zbuff = this.zbuff;
+    for(let x = 0; x < this.width - 1; x++) {
+      for(let y = 0; y < this.height - 1; y++) {
+        zbuff[x][y] = this.farclip;
+      }
     }
   }
 
-  //function zpixel(array, x, y, value, zbuf)
+  //Filters out not possible indexes, so that things can be half visible and not crash
+  pixel(x, y, value) {
+    let array = this.array;
+    if(x >= 0 && y >= 0 && x < this.width && y < this.height) {
+      array[Math.round(x)][Math.round(y)] = value;
+    }
+  }
+
+  //Only draw pixel if it is in front.
+  zpixel(x, y, z, value) {
+    x = Math.round(x);
+    y = Math.round(y);
+    if(z < this.zbuff[x][y]) {
+      this.pixel(x, y, value);
+      this.zbuff[x][y] = z;
+    }
+  }
 
   //Draws line from one point to another
   drawLine(point1, point2, color) {
     var m = (point2[1] - point1[1])/(point2[0] - point1[0]);
     var b = point1[1] - (m * point1[0]);
+    //var m2 = (point2[2] - point1[2])/(point2[0] - point1[0]);
+    //var b2 = point1[2] - (m2 * point1[0]);
 
     //Case for vertical line
     if(m == Infinity || m == -Infinity) {
@@ -69,10 +106,7 @@ class Screen {
         point2 = temp;
       }
       for(let y = point1[1]; y <= point2[1]; y+=1) {
-        let yfin = Math.round(y);
-        let xfin = Math.round(point1[0]);
-        this.pixel(xfin, yfin, color);
-        //array[xfin][yfin] = color;
+        this.pixel(point1[0], y, color);
       }
     //Case for y being iterated variable
     } else if(m > 1 || m < -1) {
@@ -82,12 +116,8 @@ class Screen {
         point2 = temp;
       }
       for(let y = point1[1]; y <= point2[1]; y+=1) {
-        let x;
-        x = (y - b)/m
-        let yfin = Math.round(y);
-        let xfin = Math.round(x);
-        this.pixel(xfin, yfin, color);
-        //array[xfin][yfin] = color;
+        let x = (y - b)/m
+        this.pixel(x, y, color);
       }
     //Case for x being iterated variable
     } else {
@@ -97,13 +127,24 @@ class Screen {
         point2 = temp;
       }
       for(let x = point1[0]; x <= point2[0]; x+=1) {
-        let y;
-        y = (m * x) + b
-        let yfin = Math.round(y);
-        let xfin = Math.round(x);
-        this.pixel(xfin, yfin, color);
-        //array[xfin][yfin] = color;
+        let y = (m * x) + b
+        this.pixel(x, y, color);
       }
+    }
+  }
+
+  //Draws horizontal/flat line between two points
+  drawFlatLine(point1, point2, color) {
+    var zm = (point2[2] - point1[2])/(point2[0] - point1[0]);
+    var zb = point1[2] - (zm * point1[0]);
+    if(point1[0] > point2[0]) {
+      let temp = point1;
+      point1 = point2;
+      point2 = temp;
+    }
+    for(let x = point1[0]; x <= point2[0]; x+=1) {
+      let z = (zm * x) + zb
+      this.zpixel(x, point1[1], z, color);
     }
   }
 
@@ -140,14 +181,22 @@ class Screen {
 
     let invSlope1 = (point2[0] - point1[0])/(point2[1] - point1[1]);
     let invSlope2 = (point3[0] - point1[0])/(point3[1] - point1[1]);
-
     let curx1 = point1[0];
     let curx2 = point1[0];
 
+    let zinvSlope1 = (point2[0] - point1[0])/(point2[2] - point1[2]);
+    let zinvSlope2 = (point3[0] - point1[0])/(point3[2] - point1[2]);
+    let curz1 = point1[0];
+    let curz2 = point1[0];
+
+
     for(let scanY = point1[1]; scanY <= point2[1]; scanY++) {
-      this.drawLine([curx1, scanY], [curx2, scanY], color);
+      this.drawFlatLine([curx1, scanY, curz1], [curx2, scanY, curz2], color);
       curx1 += invSlope1;
       curx2 += invSlope2;
+
+      curz1 += zinvSlope1;
+      curz2 += zinvSlope2;
     }
   }
 
@@ -161,14 +210,21 @@ class Screen {
 
     let invSlope1 = (point3[0] - point1[0])/(point3[1] - point1[1]);
     let invSlope2 = (point3[0] - point2[0])/(point3[1] - point2[1]);
-
     let curx1 = point3[0];
     let curx2 = point3[0];
 
+    let zinvSlope1 = (point3[0] - point1[0])/(point3[2] - point1[2]);
+    let zinvSlope2 = (point3[0] - point2[0])/(point3[2] - point2[2]);
+    let curz1 = point3[0];
+    let curz2 = point3[0];
+
     for(let scanY = point3[1]; scanY > point1[1]; scanY--) {
-      this.drawLine([curx1, scanY], [curx2, scanY], color);
+      this.drawFlatLine([curx1, scanY, curz1], [curx2, scanY, curz2], color);
       curx1 -= invSlope1;
       curx2 -= invSlope2;
+
+      curz1 -= zinvSlope1;
+      curz2 -= zinvSlope2;
     }
   }
 
@@ -186,8 +242,10 @@ class Screen {
       this.fillTopTrig(point1, point2, point3, color);
     } else {
       let m = (point3[1] - point1[1])/(point3[0] - point1[0]);
+      let m2 = (point3[2] - point1[2])/(point3[0] - point1[0]);
       let b = point1[1] - m * point1[0];
-      let point4 = [(point2[1] - b)/m, point2[1]];
+      let b2 = point1[2] - m2 * point1[0];
+      let point4 = [(point2[1] - b)/m, point2[1], (point2[2]-b2)/m2];
       this.fillBottomTrig(point1, point2, point4, color);
       this.fillTopTrig(point2, point4, point3, color);
     }
@@ -214,12 +272,12 @@ class Screen {
 
 
   //Project points from 3d area onto 2d plane to display them
-  projectPoints(points, width, height) {
+  projectPoints(points) {
     let proj_points = [];
     for(let i = 0; i < points.length; i++) {
       proj_points[i] = [(points[i][0]/(-1 * points[i][2])), (points[i][1]/(1 * points[i][2]))];
-      proj_points[i][0] = width * (1 + proj_points[i][0])/2;
-      proj_points[i][1] = height * (1 + proj_points[i][1])/2;
+      proj_points[i][0] = this.width * (1 + proj_points[i][0])/2;
+      proj_points[i][1] = this.height * (1 + proj_points[i][1])/2;
       proj_points[i][2] = points[i][2];
     }
     return proj_points;
@@ -229,7 +287,7 @@ class Screen {
   //Draws cube given projected coordinates
   drawProjectedCube(points, color) {
     //Bottom face's edges
-    this.this.drawLine(points[0], points[1], color);
+    this.drawLine(points[0], points[1], color);
     this.drawLine(points[1], points[2], color);
     this.drawLine(points[2], points[3], color);
     this.drawLine(points[3], points[0], color);
@@ -259,10 +317,7 @@ class Screen {
 
   //Draws cube given all coordinates
   drawCoordCube(points, color) {
-    let array = this.array;
-    let width = array.length;
-    let height = array[0].length;
-    let proj_points = this.projectPoints(points, width, height);
+    let proj_points = this.projectPoints(points);
     //drawProjectedCube(proj_points, color);
     this.drawColoredCube(proj_points);
   }
@@ -323,8 +378,6 @@ class Screen {
 
   }
 }
-
-
 
 
 
