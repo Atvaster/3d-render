@@ -1,21 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <title>3d render engine</title>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="stylesheet" type="text/css" href="style.css" />
-  <script type="module" src="main.js"></script>
-  <!-- <link rel="icon" href="img/favicon.png"> -->
-</head>
-<body id="body">
-  <div id="screenArea">
-    <div id="wrapper">
-      <div id="info">
-        <div id="fps">2</div>
+  <head>
+    <title>3d render engine</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    <script type="module" src="main.js"></script>
+    <!-- <link rel="icon" href="img/favicon.png"> -->
+  </head>
+  <body id="body">
+    <div class="screenArea">
+      <div class="wrapper">
+        <div id="info">
+          <div id="fps">2</div>
+        </div>
+        <canvas id="canvas" width="650" height="650"></canvas>
       </div>
-      <canvas id="canvas" width="650" height="650"></canvas>
     </div>
-  </div>
-</body>
+    <!--<div class="screenArea">
+      <div class="wrapper">
+        <canvas id="zbuffer" width="650" height="650"></canvas>
+      </div>
+    </div>
+  -->
+  </body>
 </html>

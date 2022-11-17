@@ -10,6 +10,28 @@ function makeArray(w, h, val) {
   return arr;
 }
 
+
+class Triangle {
+  point1 = [];
+  point2 = [];
+  point3 = [];
+
+  color = [];
+
+  A = 0;
+  B = 0;
+  C = 0;
+  D = 0;
+
+  constructor(point1, point2, point3) {
+    this.point1 = point1;
+    this.point2 = point2;
+    this.point3 = point3;
+  }
+}
+
+
+//Main class
 class Screen {
   //Main array
   array = [];
@@ -22,7 +44,7 @@ class Screen {
   height;
 
   //Misc stuff
-  farclip = 99999;
+  farclip = 999;
 
   //Colors
   black = [  0,   0,   0];
@@ -54,6 +76,21 @@ class Screen {
     }
   }
 
+    //Turn pixel data into 1d array for use in canvas
+  convertzbuff(imgd) {
+    let zbuff = this.zbuff;
+    for(let x = 0; x < this.width - 1; x++) {
+      for(let y = 0; y < this.height - 1; y++) {
+        let grayCol = (1 - zbuff[x][y]/this.farclip) * 255;
+        let pixelIndex = (y * this.width + x) * 4;
+        imgd.data[pixelIndex] = grayCol;
+        imgd.data[pixelIndex + 1] = grayCol;
+        imgd.data[pixelIndex + 2] = grayCol;
+        imgd.data[pixelIndex + 3] = 255;
+      }
+    }
+  }
+
   //Fills the whole array with one solid color
   screenFill(color) {
     let array = this.array;
@@ -75,24 +112,109 @@ class Screen {
 
   //Filters out not possible indexes, so that things can be half visible and not crash
   pixel(x, y, value) {
-    let array = this.array;
     if(x >= 0 && y >= 0 && x < this.width && y < this.height) {
-      array[Math.round(x)][Math.round(y)] = value;
+      this.array[Math.floor(x)][Math.floor(y)] = value;
     }
   }
 
   //Only draw pixel if it is in front.
   zpixel(x, y, z, value) {
-    x = Math.round(x);
-    y = Math.round(y);
+    x = Math.floor(x);
+    y = Math.floor(y);
     if(z < this.zbuff[x][y]) {
       this.pixel(x, y, value);
       this.zbuff[x][y] = z;
     }
   }
 
+  //Clamp values to between 0 and 1
+  clamp(value, min, max) {
+    if(typeof min === "undefined") {
+      min = 0;
+    }
+    if(typeof max === "undefined") {
+      max = 1;
+    }
+    return Math.max(min, Math.min(value, max));
+  }
+
+  //Interpolate between two points with min starting, max ending and gradient being percent
+  interpolate(min, max, gradient) {
+    return min + (max - min) * this.clamp(gradient);
+  }
+
+  //Compute gradient to find other values like startX and endX to draw between.
+  scanLine(y, pointA, pointB, pointC, pointD, color) {
+    //If pa.Y == pb.Y or pc.Y == pd.Y gradient is forced to 1
+    var gradient1 = pointA[1] != pointB[1] ? (y - pointA[1]) / (pointB[1] - pointA[1]) : 1;
+    var gradient2 = pointC[1] != pointD[1] ? (y - pointC[1]) / (pointD[1] - pointC[1]) : 1;
+
+    var startX = this.interpolate(pointA[0], pointB[0], gradient1) >> 0;
+    var endX = this.interpolate(pointC[0], pointD[0], gradient2) >> 0;
+
+    var z1 = this.interpolate(pointA[2], pointB[2], gradient1);
+    var z2 = this.interpolate(pointC[2], pointD[2], gradient2);
+
+    //Drawing line from startX to endX
+    for(var x = startX; x < endX; x++) {
+      var gradient = (x - startX) / (endX - startX);
+      var z = this.interpolate(z1, z2, gradient);
+      this.zpixel(x, y, z, color);
+    }
+  }
+
+  //Draw a triangle using alternate method
+  drawTrig(point1, point2, point3, color) {
+    let points = this.orderYPoints([point1, point2, point3]);
+    point1 = points[0];
+    point2 = points[1];
+    point3 = points[2];
+
+    //Inverse slopes
+    var invSlope1; //dP1P2
+    var invSlope2; //dP1P3
+
+    //Compute slopes
+    if(point2[1] - point1[1] > 0) {
+      invSlope1 = (point2[0] - point1[0]) / (point2[1] - point1[1]);
+    } else {
+      invSlope1 = 0;
+    }
+    if(point3[1] - point1[1] > 0) {
+      invSlope2 = (point3[0] - point1[0]) / (point3[1] - point1[1]);
+    } else {
+      invSlope2 = 0;
+    }
+
+    if(invSlope1 > invSlope2) {
+      //First case where point2 is to the right of point1 and point3
+      for(var y = point1.y >> 0; y <= point3.y >> 0; y++) {
+        if(y < point2[1]) {
+          this.scanLine(y, point1, point3, point1, point2, color);
+        } else {
+          this.scanLine(y, point1, point3, point2, point3, color);
+        }
+      }
+    } else {
+      //First case where p2 is to the left of point1 and point3
+      for(var y = point1[1] >> 0; y <= point3[1] >> 0; y++) {
+        if(y < point2[1]) {
+          this.scanLine(y, point1, point2, point1, point3, color);
+        } else {
+          this.scanLine(y, point2, point3, point1, point3, color);
+        }
+      }
+    }
+  }
+
+
   //Draws line from one point to another
   drawLine(point1, point2, color) {
+    if(point1[0] > point2[0]) {
+      let temp = point1;
+      point1 = point2;
+      point2 = temp;
+    }
     var m = (point2[1] - point1[1])/(point2[0] - point1[0]);
     var b = point1[1] - (m * point1[0]);
     //var m2 = (point2[2] - point1[2])/(point2[0] - point1[0]);
@@ -133,21 +255,6 @@ class Screen {
     }
   }
 
-  //Draws horizontal/flat line between two points
-  drawFlatLine(point1, point2, color) {
-    var zm = (point2[2] - point1[2])/(point2[0] - point1[0]);
-    var zb = point1[2] - (zm * point1[0]);
-    if(point1[0] > point2[0]) {
-      let temp = point1;
-      point1 = point2;
-      point2 = temp;
-    }
-    for(let x = point1[0]; x <= point2[0]; x+=1) {
-      let z = (zm * x) + zb
-      this.zpixel(x, point1[1], z, color);
-    }
-  }
-
 
   //Draws a triangle between three points
   lineTrig(point1, point2, point3, color) {
@@ -158,7 +265,7 @@ class Screen {
 
 
   //Bubble sort points in array based on y value
-  orderPoints(points) {
+  orderYPoints(points) {
     for(let i = 0; i < points.length - 1; i++) {
       for(let j = 0; j < points.length - i - 1; j++) {
         if(points[j][1] > points[j+1][1]) {
@@ -172,102 +279,11 @@ class Screen {
   }
 
 
-  //Fill a triangle with a flat bottom edge
-  fillBottomTrig(point1, point2, point3, color) {
-    let newp = this.orderPoints([point1, point2, point3]);
-    point1 = newp[0];
-    point2 = newp[1];
-    point3 = newp[2];
-
-    let invSlope1 = (point2[0] - point1[0])/(point2[1] - point1[1]);
-    let invSlope2 = (point3[0] - point1[0])/(point3[1] - point1[1]);
-    let curx1 = point1[0];
-    let curx2 = point1[0];
-
-    let zinvSlope1 = (point2[0] - point1[0])/(point2[2] - point1[2]);
-    let zinvSlope2 = (point3[0] - point1[0])/(point3[2] - point1[2]);
-    let curz1 = point1[0];
-    let curz2 = point1[0];
-
-
-    for(let scanY = point1[1]; scanY <= point2[1]; scanY++) {
-      this.drawFlatLine([curx1, scanY, curz1], [curx2, scanY, curz2], color);
-      curx1 += invSlope1;
-      curx2 += invSlope2;
-
-      curz1 += zinvSlope1;
-      curz2 += zinvSlope2;
-    }
-  }
-
-
-  //Fill a triangle with a flat top edge
-  fillTopTrig(point1, point2, point3, color) {
-    let newp = this.orderPoints([point1, point2, point3]);
-    point1 = newp[0];
-    point2 = newp[1];
-    point3 = newp[2];
-
-    let invSlope1 = (point3[0] - point1[0])/(point3[1] - point1[1]);
-    let invSlope2 = (point3[0] - point2[0])/(point3[1] - point2[1]);
-    let curx1 = point3[0];
-    let curx2 = point3[0];
-
-    let zinvSlope1 = (point3[0] - point1[0])/(point3[2] - point1[2]);
-    let zinvSlope2 = (point3[0] - point2[0])/(point3[2] - point2[2]);
-    let curz1 = point3[0];
-    let curz2 = point3[0];
-
-    for(let scanY = point3[1]; scanY > point1[1]; scanY--) {
-      this.drawFlatLine([curx1, scanY, curz1], [curx2, scanY, curz2], color);
-      curx1 -= invSlope1;
-      curx2 -= invSlope2;
-
-      curz1 -= zinvSlope1;
-      curz2 -= zinvSlope2;
-    }
-  }
-
-
-  //Fill any triangle
-  fillTrig(point1, point2, point3, color) {
-    let temppoints = this.orderPoints([point1, point2, point3]);
-    point1 = temppoints[0];
-    point2 = temppoints[1];
-    point3 = temppoints[2];
-
-    if(point2[1] == point3[1]) {
-      this.fillBottomTrig(point1, point2, point3, color);
-    }else if(point1[1] == point2[1]) {
-      this.fillTopTrig(point1, point2, point3, color);
-    } else {
-      let m = (point3[1] - point1[1])/(point3[0] - point1[0]);
-      let m2 = (point3[2] - point1[2])/(point3[0] - point1[0]);
-      let b = point1[1] - m * point1[0];
-      let b2 = point1[2] - m2 * point1[0];
-      let point4 = [(point2[1] - b)/m, point2[1], (point2[2]-b2)/m2];
-      this.fillBottomTrig(point1, point2, point4, color);
-      this.fillTopTrig(point2, point4, point3, color);
-    }
-  }
-
-
-  //Complete triangle drawing function
-  makeTrig(point1, point2, point3, color1, color2) {
-    if(color1 != "none") {
-      this.lineTrig(point1, point2, point3, color1);
-    }
-    if(color2 != "none") {
-      this.fillTrig(point1, point2, point3, color2);
-    }
-  }
-
-
   //Fill quads by splitting into two triangles
   fillQuad(points, color) {
-    points = this.orderPoints(points);
-    this.fillTrig(points[0], points[1], points[2], color);
-    this.fillTrig(points[1], points[2], points[3], color);
+    points = this.orderYPoints(points);
+    this.drawTrig(points[0], points[1], points[2], color);
+    this.drawTrig(points[1], points[2], points[3], color);
   }
 
 
@@ -278,7 +294,11 @@ class Screen {
       proj_points[i] = [(points[i][0]/(-1 * points[i][2])), (points[i][1]/(1 * points[i][2]))];
       proj_points[i][0] = this.width * (1 + proj_points[i][0])/2;
       proj_points[i][1] = this.height * (1 + proj_points[i][1])/2;
-      proj_points[i][2] = points[i][2];
+      if(points[i][2] < this.farclip) {
+        proj_points[i][2] = points[i][2];
+      } else {
+        proj_points[i][2] = this.farclip;
+      }
     }
     return proj_points;
   }
@@ -303,6 +323,7 @@ class Screen {
     this.drawLine(points[7], points[4], color);
   }
 
+  //Draws cube with differently colored faces
   drawColoredCube(points) {
     this.fillQuad([points[0], points[1], points[2], points[3]], this.red);
     this.fillQuad([points[4], points[5], points[6], points[7]], this.red);
@@ -318,7 +339,7 @@ class Screen {
   //Draws cube given all coordinates
   drawCoordCube(points, color) {
     let proj_points = this.projectPoints(points);
-    //drawProjectedCube(proj_points, color);
+    this.drawProjectedCube(proj_points, color);
     this.drawColoredCube(proj_points);
   }
 
@@ -378,8 +399,6 @@ class Screen {
 
   }
 }
-
-
 
 
 //Export all functions

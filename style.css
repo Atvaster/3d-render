@@ -2,7 +2,7 @@
   margin: 5px;
 }
 
-#wrapper {
+.wrapper {
   display: inline-block;
   position: relative;
 }
@@ -11,10 +11,17 @@
   display: block;
   margin-left: auto;
   margin-right: auto;
-  image-rendering: pixelated; 
+  image-rendering: pixelated;
 }
 
-#screenArea {
+#zbuffer {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  image-rendering: pixelated;
+}
+
+.screenArea {
   display: flex;
   justify-content: center;
 }

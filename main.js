@@ -30,8 +30,8 @@ window.onload = function() {
   function main(curTime) {
     let rot = curTime * 30/1000
     s.screenFill(black);
-    s.drawRotCube([0, 0, -5], 1, rot%360, rot%360, rot%360, white);
-    //makeTrig(pixels, [100, 100], [200, 200], [500, 50], white, white);
+    s.drawRotCube([0, 0, 5], 1, rot%360, rot%360, rot%360, white);
+    //s.makeTrig([100, 100], [200, 200], [500, 50], white, white);
 
     calcFrame += 1;
     s.zClear();
@@ -53,6 +53,7 @@ window.onload = function() {
 
     //Convert 2d array to 1d array
     s.convertData(imageData);
+    //s.convertzbuff(imageData);
     //Waits until screen is ready to be refreshed
     window.requestAnimationFrame(push);
     //Puts 1d array onto canvas
