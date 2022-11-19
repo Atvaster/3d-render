@@ -44,7 +44,7 @@ class Screen {
   height;
 
   //Misc stuff
-  farclip = 999;
+  farclip = -999;
 
   //Colors
   black = [  0,   0,   0];
@@ -121,7 +121,7 @@ class Screen {
   zpixel(x, y, z, value) {
     x = Math.floor(x);
     y = Math.floor(y);
-    if(z < this.zbuff[x][y]) {
+    if(z > this.zbuff[x][y]) {
       this.pixel(x, y, value);
       this.zbuff[x][y] = z;
     }
@@ -141,70 +141,6 @@ class Screen {
   //Interpolate between two points with min starting, max ending and gradient being percent
   interpolate(min, max, gradient) {
     return min + (max - min) * this.clamp(gradient);
-  }
-
-  //Compute gradient to find other values like startX and endX to draw between.
-  scanLine(y, pointA, pointB, pointC, pointD, color) {
-    //If pa.Y == pb.Y or pc.Y == pd.Y gradient is forced to 1
-    var gradient1 = pointA[1] != pointB[1] ? (y - pointA[1]) / (pointB[1] - pointA[1]) : 1;
-    var gradient2 = pointC[1] != pointD[1] ? (y - pointC[1]) / (pointD[1] - pointC[1]) : 1;
-
-    var startX = this.interpolate(pointA[0], pointB[0], gradient1) >> 0;
-    var endX = this.interpolate(pointC[0], pointD[0], gradient2) >> 0;
-
-    var z1 = this.interpolate(pointA[2], pointB[2], gradient1);
-    var z2 = this.interpolate(pointC[2], pointD[2], gradient2);
-
-    //Drawing line from startX to endX
-    for(var x = startX; x < endX; x++) {
-      var gradient = (x - startX) / (endX - startX);
-      var z = this.interpolate(z1, z2, gradient);
-      this.zpixel(x, y, z, color);
-    }
-  }
-
-  //Draw a triangle using alternate method
-  drawTrig(point1, point2, point3, color) {
-    let points = this.orderYPoints([point1, point2, point3]);
-    point1 = points[0];
-    point2 = points[1];
-    point3 = points[2];
-
-    //Inverse slopes
-    var invSlope1; //dP1P2
-    var invSlope2; //dP1P3
-
-    //Compute slopes
-    if(point2[1] - point1[1] > 0) {
-      invSlope1 = (point2[0] - point1[0]) / (point2[1] - point1[1]);
-    } else {
-      invSlope1 = 0;
-    }
-    if(point3[1] - point1[1] > 0) {
-      invSlope2 = (point3[0] - point1[0]) / (point3[1] - point1[1]);
-    } else {
-      invSlope2 = 0;
-    }
-
-    if(invSlope1 > invSlope2) {
-      //First case where point2 is to the right of point1 and point3
-      for(var y = point1.y >> 0; y <= point3.y >> 0; y++) {
-        if(y < point2[1]) {
-          this.scanLine(y, point1, point3, point1, point2, color);
-        } else {
-          this.scanLine(y, point1, point3, point2, point3, color);
-        }
-      }
-    } else {
-      //First case where p2 is to the left of point1 and point3
-      for(var y = point1[1] >> 0; y <= point3[1] >> 0; y++) {
-        if(y < point2[1]) {
-          this.scanLine(y, point1, point2, point1, point3, color);
-        } else {
-          this.scanLine(y, point2, point3, point1, point3, color);
-        }
-      }
-    }
   }
 
 
@@ -263,7 +199,6 @@ class Screen {
     this.drawLine(point3, point1, color);
   }
 
-
   //Bubble sort points in array based on y value
   orderYPoints(points) {
     for(let i = 0; i < points.length - 1; i++) {
@@ -272,16 +207,87 @@ class Screen {
           let temp = points[j];
           points[j] = points[j+1];
           points[j+1] = temp;
+        } else if(points[j][1] == points[j+1][1]) {
+          if(points[j][0] > points[j+1][0]) {
+            let temp = points[j];
+            points[j] = points[j+1];
+            points[j+1] = temp;
+          }
         }
       }
     }
     return points;
   }
 
+  //Compute gradient to find other values like startX and endX to draw between.
+  scanLine(y, pointA, pointB, pointC, pointD, color) {
+    //If pa.Y == pb.Y or pc.Y == pd.Y gradient is forced to 1
+    var gradient1 = pointA[1] != pointB[1] ? (y - pointA[1]) / (pointB[1] - pointA[1]) : 1;
+    var gradient2 = pointC[1] != pointD[1] ? (y - pointC[1]) / (pointD[1] - pointC[1]) : 1;
+
+    var startX = this.interpolate(pointA[0], pointB[0], gradient1) >> 0;
+    var endX = this.interpolate(pointC[0], pointD[0], gradient2) >> 0;
+
+    var z1 = this.interpolate(pointA[2], pointB[2], gradient1);
+    var z2 = this.interpolate(pointC[2], pointD[2], gradient2);
+
+    //Drawing line from startX to endX
+    for(var x = startX; x < endX; x++) {
+      var gradient = (x - startX) / (endX - startX);
+      var z = this.interpolate(z1, z2, gradient);
+      this.zpixel(x, y, z, color);
+    }
+  }
+
+  //Draw a triangle using alternate method
+  drawTrig(point1, point2, point3, color) {
+    let points = this.orderYPoints([point1, point2, point3]);
+    point1 = points[0];
+    point2 = points[1];
+    point3 = points[2];
+
+    //Inverse slopes
+    var invSlope1; //dP1P2
+    var invSlope2; //dP1P3
+
+    //Compute slopes
+    if(point2[1] - point1[1] > 0) {
+      invSlope1 = (point2[0] - point1[0]) / (point2[1] - point1[1]);
+    } else {
+      invSlope1 = 0;
+    }
+    if(point3[1] - point1[1] > 0) {
+      invSlope2 = (point3[0] - point1[0]) / (point3[1] - point1[1]);
+    } else {
+      invSlope2 = 0;
+    }
+
+    if(invSlope1 > invSlope2) {
+      //First case where point2 is to the right of point1 and point3
+      for(var y = point1[1] >> 0; y <= point3[1] >> 0; y++) {
+        if(y < point2[1]) {
+          this.scanLine(y, point1, point3, point1, point2, color);
+        } else {
+          this.scanLine(y, point1, point3, point2, point3, color);
+        }
+      }
+    } else {
+      //First case where p2 is to the left of point1 and point3
+      for(var y = point1[1] >> 0; y <= point3[1] >> 0; y++) {
+        if(y < point2[1]) {
+          this.scanLine(y, point1, point2, point1, point3, color);
+        } else {
+          this.scanLine(y, point2, point3, point1, point3, color);
+        }
+      }
+    }
+  }
+
 
   //Fill quads by splitting into two triangles
-  fillQuad(points, color) {
+  drawQuad(points, color) {
     points = this.orderYPoints(points);
+    //points[0] = points[0]
     this.drawTrig(points[0], points[1], points[2], color);
     this.drawTrig(points[1], points[2], points[3], color);
   }
@@ -294,7 +300,7 @@ class Screen {
       proj_points[i] = [(points[i][0]/(-1 * points[i][2])), (points[i][1]/(1 * points[i][2]))];
       proj_points[i][0] = this.width * (1 + proj_points[i][0])/2;
       proj_points[i][1] = this.height * (1 + proj_points[i][1])/2;
-      if(points[i][2] < this.farclip) {
+      if(points[i][2] > this.farclip) {
         proj_points[i][2] = points[i][2];
       } else {
         proj_points[i][2] = this.farclip;
@@ -325,14 +331,14 @@ class Screen {
 
   //Draws cube with differently colored faces
   drawColoredCube(points) {
-    this.fillQuad([points[0], points[1], points[2], points[3]], this.red);
-    this.fillQuad([points[4], points[5], points[6], points[7]], this.red);
+    this.drawQuad([points[0], points[1], points[2], points[3]], this.red);
+    this.drawQuad([points[4], points[5], points[6], points[7]], this.red);
 
-    this.fillQuad([points[0], points[1], points[4], points[5]], this.blue);
-    this.fillQuad([points[3], points[2], points[7], points[6]], this.blue);
+    this.drawQuad([points[0], points[1], points[4], points[5]], this.blue);
+    this.drawQuad([points[3], points[2], points[7], points[6]], this.blue);
 
-    this.fillQuad([points[3], points[0], points[7], points[4]], this.green);
-    this.fillQuad([points[1], points[2], points[5], points[6]], this.green);
+    this.drawQuad([points[3], points[0], points[7], points[4]], this.green);
+    this.drawQuad([points[1], points[2], points[5], points[6]], this.green);
   }
 
 

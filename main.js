@@ -30,8 +30,17 @@ window.onload = function() {
   function main(curTime) {
     let rot = curTime * 30/1000
     s.screenFill(black);
-    s.drawRotCube([0, 0, 5], 1, rot%360, rot%360, rot%360, white);
-    //s.makeTrig([100, 100], [200, 200], [500, 50], white, white);
+
+    //s.drawRotCube([0, 0, -5], 1, rot%360, rot%360, rot%360, white);
+    //s.drawCube([0, -2, -5], 1, white);
+    //s.drawQuad([[100, 500, -1], [200, 600, -1], [500, 450, -1], [500, 500, -1]], white);
+
+    //DEBUG
+    s.drawTrig([500, 500, -1], [100, 500, -1], [200, 600, -1], white); //BUG WHEN SECOND POINTS X IS less than or equal to 200, need to check case
+    //DEBUG
+
+    //s.drawTrig([100, 500, -1], [200, 600, -1], [500, 450, -1], white);
+    //s.drawTrig([500, 500, -1], [200, 600, -1], [500, 450, -1], white);
 
     calcFrame += 1;
     s.zClear();
