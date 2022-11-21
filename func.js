@@ -207,12 +207,6 @@ class Screen {
           let temp = points[j];
           points[j] = points[j+1];
           points[j+1] = temp;
-        } else if(points[j][1] == points[j+1][1]) {
-          if(points[j][0] > points[j+1][0]) {
-            let temp = points[j];
-            points[j] = points[j+1];
-            points[j+1] = temp;
-          }
         }
       }
     }
@@ -230,6 +224,13 @@ class Screen {
 
     var z1 = this.interpolate(pointA[2], pointB[2], gradient1);
     var z2 = this.interpolate(pointC[2], pointD[2], gradient2);
+
+    //Swap start and end for loop to work properly
+    if(startX > endX) {
+      let temp = startX;
+      startX = endX;
+      endX = temp;
+    }
 
     //Drawing line from startX to endX
     for(var x = startX; x < endX; x++) {
@@ -287,7 +288,6 @@ class Screen {
   //Fill quads by splitting into two triangles
   drawQuad(points, color) {
     points = this.orderYPoints(points);
-    //points[0] = points[0]
     this.drawTrig(points[0], points[1], points[2], color);
     this.drawTrig(points[1], points[2], points[3], color);
   }
@@ -331,6 +331,7 @@ class Screen {
 
   //Draws cube with differently colored faces
   drawColoredCube(points) {
+    console.log(points);
     this.drawQuad([points[0], points[1], points[2], points[3]], this.red);
     this.drawQuad([points[4], points[5], points[6], points[7]], this.red);
 
@@ -345,7 +346,7 @@ class Screen {
   //Draws cube given all coordinates
   drawCoordCube(points, color) {
     let proj_points = this.projectPoints(points);
-    this.drawProjectedCube(proj_points, color);
+    //this.drawProjectedCube(proj_points, color);
     this.drawColoredCube(proj_points);
   }
 

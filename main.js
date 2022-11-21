@@ -33,14 +33,9 @@ window.onload = function() {
 
     //s.drawRotCube([0, 0, -5], 1, rot%360, rot%360, rot%360, white);
     //s.drawCube([0, -2, -5], 1, white);
-    //s.drawQuad([[100, 500, -1], [200, 600, -1], [500, 450, -1], [500, 500, -1]], white);
-
-    //DEBUG
-    s.drawTrig([500, 500, -1], [100, 500, -1], [200, 600, -1], white); //BUG WHEN SECOND POINTS X IS less than or equal to 200, need to check case
-    //DEBUG
-
-    //s.drawTrig([100, 500, -1], [200, 600, -1], [500, 450, -1], white);
-    //s.drawTrig([500, 500, -1], [200, 600, -1], [500, 450, -1], white);
+    //s.drawQuad([[200, 500, -1], [400, 600, -1], [500, 400, -1], [300, 400, -1]], white);
+    s.drawTrig([500, 400, -1], [300, 400, -1], [200, 500, -1], green);
+    s.drawTrig([300, 400, -1], [200, 500, -1], [400, 600, -1], green);
 
     calcFrame += 1;
     s.zClear();
