@@ -127,6 +127,33 @@ class Screen {
     }
   }
 
+  //Find maximum value in array
+  max(arr) {
+    let top = arr[0];
+    for(let i = 0; i < arr.length; i++) {
+      if(arr[i] > top) {
+        top = arr[i]
+      }
+    }
+    return top;
+  }
+
+  //Find minimum value in array
+  min(arr) {
+    let bot = arr[0];
+    for(let i = 0; i < arr.length; i++) {
+      if(arr[i] < bot) {
+        bot = arr[i]
+      }
+    }
+    return bot;
+  }
+
+  //Find distance between two points
+  distance(point1, point2) {
+    return Math.sqrt(Math.pow((point2[1] - point1[1]), 2) + Math.pow((point2[0] - point1[1]), 2));
+  }
+
   //Clamp values to between 0 and 1
   clamp(value, min, max) {
     if(typeof min === "undefined") {
@@ -288,7 +315,18 @@ class Screen {
   //Fill quads by splitting into two triangles
   drawQuad(points, color) {
     points = this.orderYPoints(points);
-    this.drawTrig(points[0], points[1], points[2], color);
+    if(points[0][0] > points[1][0]) {
+      let temp = points[0];
+      points[0] = points[1];
+      points[1] = temp;
+    }
+    if(points[2][0] < points[3][0]) {
+      let temp = points[2];
+      points[2] = points[3];
+      points[3] = temp;
+    }
+
+    this.drawTrig(points[0], points[1], points[3], color);
     this.drawTrig(points[1], points[2], points[3], color);
   }
 
@@ -331,7 +369,7 @@ class Screen {
 
   //Draws cube with differently colored faces
   drawColoredCube(points) {
-    console.log(points);
+    //console.log(points); //for debugging fact clipping
     this.drawQuad([points[0], points[1], points[2], points[3]], this.red);
     this.drawQuad([points[4], points[5], points[6], points[7]], this.red);
 

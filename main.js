@@ -31,11 +31,9 @@ window.onload = function() {
     let rot = curTime * 30/1000
     s.screenFill(black);
 
-    //s.drawRotCube([0, 0, -5], 1, rot%360, rot%360, rot%360, white);
-    //s.drawCube([0, -2, -5], 1, white);
-    //s.drawQuad([[200, 500, -1], [400, 600, -1], [500, 400, -1], [300, 400, -1]], white);
-    s.drawTrig([500, 400, -1], [300, 400, -1], [200, 500, -1], green);
-    s.drawTrig([300, 400, -1], [200, 500, -1], [400, 600, -1], green);
+    s.drawRotCube([0, 0, -5], 1, rot%360, rot%360, rot%360, white);
+    //s.drawRotCube([0, -2, -5], 1, 0, 180, 70, white);
+    //s.drawQuad([[400, 430, -1], [450, 500, -1], [230, 300, -1], [200, 400, -1]], white);
 
     calcFrame += 1;
     s.zClear();
