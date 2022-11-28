@@ -36,7 +36,7 @@ class Screen {
   //Main array
   array = [];
 
-  //
+  //Depth buffer
   zbuff = [];
 
   //Size of screen
@@ -55,12 +55,14 @@ class Screen {
 
 
 
+
   constructor(array) {
     this.array = array;
     this.width = array.length;
     this.height = array[0].length;
     this.zbuff = makeArray(this.height, this.width, this.farclip); //width and height swapped for [x][y] to be the syntax
   }
+
 
   //Turn pixel data into 1d array for use in canvas
   convertData(imgd) {
@@ -91,6 +93,7 @@ class Screen {
     }
   }
 
+
   //Fills the whole array with one solid color
   screenFill(color) {
     let array = this.array;
@@ -110,6 +113,7 @@ class Screen {
     }
   }
 
+
   //Filters out not possible indexes, so that things can be half visible and not crash
   pixel(x, y, value) {
     if(x >= 0 && y >= 0 && x < this.width && y < this.height) {
@@ -126,6 +130,7 @@ class Screen {
       this.zbuff[x][y] = z;
     }
   }
+
 
   //Find maximum value in array
   max(arr) {
@@ -169,7 +174,6 @@ class Screen {
   interpolate(min, max, gradient) {
     return min + (max - min) * this.clamp(gradient);
   }
-
 
   //Draws line from one point to another
   drawLine(point1, point2, color) {
@@ -239,6 +243,7 @@ class Screen {
     }
     return points;
   }
+
 
   //Compute gradient to find other values like startX and endX to draw between.
   scanLine(y, pointA, pointB, pointC, pointD, color) {
@@ -347,6 +352,35 @@ class Screen {
     return proj_points;
   }
 
+  //Rotate a set of points around center on three axis
+  rotPoints(points, center, rotx, roty, rotz) {
+    //Rot x
+    for(let h = 0; h < points.length; h++) {
+      let dist = Math.sqrt((points[h][1] - center[1])**2 + (points[h][2] - center[2])**2);
+      let ang = Math.atan2(((points[h][2] - center[2])), ((points[h][1] - center[1])))* 180/Math.PI;
+      points[h][1] = center[1] + (dist * (Math.cos((rotx + ang) * Math.PI/180)));
+      points[h][2] = center[2] + (dist * (Math.sin((rotx + ang) * Math.PI/180)));
+    }
+
+    //Rot y
+    for(let j = 0; j < points.length; j++) {
+      let dist = Math.sqrt((points[j][0] - center[0])**2 + (points[j][2] - center[2])**2);
+      let ang = Math.atan2(((points[j][2] - center[2])), ((points[j][0] - center[0])))* 180/Math.PI;
+      points[j][0] = center[0] + (dist * (Math.cos((roty + ang) * Math.PI/180)));
+      points[j][2] = center[2] + (dist * (Math.sin((roty + ang) * Math.PI/180)));
+    }
+
+    //Rot z
+    for(let i = 0; i < points.length; i++) {
+      let dist = Math.sqrt((points[i][0] - center[0])**2 + (points[i][1] - center[1])**2);
+      let ang = Math.atan2(((points[i][1] - center[1])), ((points[i][0] - center[0])))*180/Math.PI;
+      points[i][0] = center[0] + (dist * (Math.cos((rotz + ang) * Math.PI/180)));
+      points[i][1] = center[1] + (dist * (Math.sin((rotz + ang) * Math.PI/180)));
+    }
+
+    return points;
+  }
+
 
   //Draws cube given projected coordinates
   drawProjectedCube(points, color) {
@@ -380,7 +414,6 @@ class Screen {
     this.drawQuad([points[1], points[2], points[5], points[6]], this.green);
   }
 
-
   //Draws cube given all coordinates
   drawCoordCube(points, color) {
     let proj_points = this.projectPoints(points);
@@ -393,37 +426,6 @@ class Screen {
   drawCube(center, side, color) {
     this.drawRotCube(center, side, 0, 0, 0, color);
   }
-
-
-  //Rotate a set of points around center on three axis
-  rotPoints(points, center, rotx, roty, rotz) {
-    //Rot x
-    for(let h = 0; h < points.length; h++) {
-      let dist = Math.sqrt((points[h][1] - center[1])**2 + (points[h][2] - center[2])**2);
-      let ang = Math.atan2(((points[h][2] - center[2])), ((points[h][1] - center[1])))* 180/Math.PI;
-      points[h][1] = center[1] + (dist * (Math.cos((rotx + ang) * Math.PI/180)));
-      points[h][2] = center[2] + (dist * (Math.sin((rotx + ang) * Math.PI/180)));
-    }
-
-    //Rot y
-    for(let j = 0; j < points.length; j++) {
-      let dist = Math.sqrt((points[j][0] - center[0])**2 + (points[j][2] - center[2])**2);
-      let ang = Math.atan2(((points[j][2] - center[2])), ((points[j][0] - center[0])))* 180/Math.PI;
-      points[j][0] = center[0] + (dist * (Math.cos((roty + ang) * Math.PI/180)));
-      points[j][2] = center[2] + (dist * (Math.sin((roty + ang) * Math.PI/180)));
-    }
-
-    //Rot z
-    for(let i = 0; i < points.length; i++) {
-      let dist = Math.sqrt((points[i][0] - center[0])**2 + (points[i][1] - center[1])**2);
-      let ang = Math.atan2(((points[i][1] - center[1])), ((points[i][0] - center[0])))*180/Math.PI;
-      points[i][0] = center[0] + (dist * (Math.cos((rotz + ang) * Math.PI/180)));
-      points[i][1] = center[1] + (dist * (Math.sin((rotz + ang) * Math.PI/180)));
-    }
-
-    return points;
-  }
-
 
   //Draw cube function with rotational parameters
   drawRotCube(center, side, rotx, roty, rotz, color) {
@@ -439,9 +441,7 @@ class Screen {
     points[7] = [center[0] - side/2, center[1] + side/2, center[2] - side/2];
 
     points = this.rotPoints(points, center, rotx, roty, rotz);
-
     this.drawCoordCube(points, color);
-
   }
 }
 
