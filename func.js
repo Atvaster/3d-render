@@ -223,6 +223,19 @@ class Screen {
   }
 
 
+  //Check if point is above line that goes through two other points
+  pointAbove(seg, point) {
+    let m = (seg[1][1] - seg[0][1])/(seg[1][0] - seg[0][0]);
+    let b = seg[1][1] - m * seg[1][0];
+    let linecheck = m * point[0] + b;
+    if(point[1] < linecheck) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+
   //Draws a triangle between three points
   lineTrig(point1, point2, point3, color) {
     this.drawLine(point1, point2, color);
@@ -278,7 +291,6 @@ class Screen {
     point1 = points[0];
     point2 = points[1];
     point3 = points[2];
-
     //Inverse slopes
     var invSlope1; //dP1P2
     var invSlope2; //dP1P3
@@ -316,23 +328,28 @@ class Screen {
     }
   }
 
-
   //Fill quads by splitting into two triangles
   drawQuad(points, color) {
-    points = this.orderYPoints(points);
-    if(points[0][0] > points[1][0]) {
-      let temp = points[0];
-      points[0] = points[1];
-      points[1] = temp;
-    }
-    if(points[2][0] < points[3][0]) {
-      let temp = points[2];
-      points[2] = points[3];
-      points[3] = temp;
+    //Diagonal 1, 2
+    if((this.pointAbove([points[0], points[1]], points[2]) == true && this.pointAbove([points[0], points[1]], points[3]) == false)
+    || (this.pointAbove([points[0], points[1]], points[2]) == false && this.pointAbove([points[0], points[1]], points[3]) == true)) {
+      this.drawTrig(points[0], points[1], points[2], color);
+      this.drawTrig(points[0], points[1], points[3], color);
     }
 
-    this.drawTrig(points[0], points[1], points[3], color);
-    this.drawTrig(points[1], points[2], points[3], color);
+    //Diagonal 1, 3
+    if((this.pointAbove([points[0], points[2]], points[1]) == true && this.pointAbove([points[0], points[2]], points[3]) == false)
+    || (this.pointAbove([points[0], points[2]], points[1]) == false && this.pointAbove([points[0], points[2]], points[3]) == true)) {
+      this.drawTrig(points[0], points[2], points[1], color);
+      this.drawTrig(points[0], points[2], points[3], color);
+    }
+
+    //Diagonal 1, 4
+    if((this.pointAbove([points[0], points[3]], points[1]) == true && this.pointAbove([points[0], points[3]], points[2]) == false)
+    || (this.pointAbove([points[0], points[3]], points[1]) == false && this.pointAbove([points[0], points[3]], points[2]) == true)) {
+      this.drawTrig(points[0], points[3], points[1], color);
+      this.drawTrig(points[0], points[3], points[2], color);
+    }
   }
 
 
