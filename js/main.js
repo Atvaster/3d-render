@@ -1,16 +1,16 @@
 //import simple functions for drawing on screen
 import { Screen, makeArray, loadFile, splitByLine } from "./func.js";
+//import { cube } from "./load.js";
 
-const cube = await loadFile("./Resources/Meshes/Cube/cube.obj")
-console.log(cube);
+window.addEventListener("load", async () => {
+  const {cube} = await import('./load.js');
 
-window.onload = function() {
   //Initializing canvas vars
-  var c = document.getElementById("canvas");
-  var ctx = c.getContext('2d');
+  const c = document.getElementById("canvas");
+  const ctx = c.getContext('2d');
   //Simpler height and width
-  var width = c.width;
-  var height = c.height;
+  const width = c.width;
+  const height = c.height;
   //Per-pixel control of canvas
   var imageData = ctx.createImageData(width, height);
 
@@ -19,15 +19,12 @@ window.onload = function() {
 
   //Screen init object
   const s = new Screen(pixels);
-
   //Color presets
   var black = [  0,   0,   0];
   var red   = [255,   0,   0];
   var green = [  0, 255,   0];
   var blue  = [  0,   0, 255];
   var white = [255, 255, 255];
-
-  //console.log(setTimeout(splitByLine(cube), 10000));
 
   //Function for all logic
   function main(curTime) {
@@ -76,5 +73,5 @@ window.onload = function() {
   }
   var startTime = window.performance.now();
   push(0, startTime);
-}
+});
 
