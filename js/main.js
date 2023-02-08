@@ -1,6 +1,13 @@
 //import functions
 import { Screen, makeArray, loadFile, splitByLine } from "./func.js";
 
+window.addEventListener("DOMContentLoaded", ()=>{
+  const canvas = document.querySelector("canvas")
+  const size = Math.min(document.documentElement.clientWidth, document.documentElement.clientHeight)
+  canvas.width = size
+  canvas.height = size
+});
+
 window.addEventListener("load", async () => {
   const {cube} = await import('./load.js');
 
@@ -10,6 +17,7 @@ window.addEventListener("load", async () => {
   //Simpler height and width
   const width = c.width;
   const height = c.height;
+  let vic = new Victor(41, 1337);
   //Per-pixel control of canvas
   let imageData = ctx.createImageData(width, height);
 
