@@ -1,6 +1,5 @@
-//import simple functions for drawing on screen
+//import functions
 import { Screen, makeArray, loadFile, splitByLine } from "./func.js";
-//import { cube } from "./load.js";
 
 window.addEventListener("load", async () => {
   const {cube} = await import('./load.js');
@@ -12,19 +11,19 @@ window.addEventListener("load", async () => {
   const width = c.width;
   const height = c.height;
   //Per-pixel control of canvas
-  var imageData = ctx.createImageData(width, height);
+  let imageData = ctx.createImageData(width, height);
 
   //2d array that I will write to.
-  var pixels = makeArray(height, width, 0); //width and height swapped for [x][y] to be the syntax
+  let pixels = makeArray(height, width, 0); //width and height swapped for [x][y] to be the syntax
 
   //Screen init object
   const s = new Screen(pixels);
   //Color presets
-  var black = [  0,   0,   0];
-  var red   = [255,   0,   0];
-  var green = [  0, 255,   0];
-  var blue  = [  0,   0, 255];
-  var white = [255, 255, 255];
+  const black = [  0,   0,   0];
+  const red   = [255,   0,   0];
+  const green = [  0, 255,   0];
+  const blue  = [  0,   0, 255];
+  const white = [255, 255, 255];
 
   //Function for all logic
   function main(curTime) {
@@ -38,8 +37,8 @@ window.addEventListener("load", async () => {
   }
 
   //Frame init
-  var drawFrame = 1;
-  var calcFrame = 1;
+  let drawFrame = 1;
+  let calcFrame = 1;
 
   //Function to push frames to screen
   function push() {
@@ -71,7 +70,7 @@ window.addEventListener("load", async () => {
     //console.log("frame:" + frame);
     drawFrame += 1;
   }
-  var startTime = window.performance.now();
+  let startTime = window.performance.now();
   push(0, startTime);
 });
 
