@@ -10,12 +10,14 @@ function makeArray(w, h, val) {
   return arr;
 }
 
+//Load file from specified url and returns contents
 async function loadFile(path) {
   let response = await fetch(path);
-  let data = response.text();
+  let data = await response.text();
   return data;
 }
 
+//Splits a string by line
 function splitByLine(file) {
   return(file.split("\n"));
 }
