@@ -1,6 +1,10 @@
-import { Screen, makeArray, loadFile, splitByLine } from "./func.js";
+//Load file from specified url and returns contents
+async function loadFile(path) {
+  let response = await fetch(path);
+  let data = await response.text();
+  return data;
+}
 
-const cube = await loadFile("./Resources/Meshes/Cube/cube.obj")
-//console.log(cube);
+const cubeRaw = await loadFile("./Resources/Meshes/Cube/cube.obj");
 
-export { cube };
+export { cubeRaw };

@@ -1,15 +1,17 @@
 //import functions
-import { Screen, makeArray, loadFile, splitByLine } from "./func.js";
+import { Screen, Object, makeArray } from "./func.js";
 
 window.addEventListener("DOMContentLoaded", ()=>{
-  const canvas = document.querySelector("canvas")
-  const size = Math.min(document.documentElement.clientWidth, document.documentElement.clientHeight)
-  canvas.width = size
-  canvas.height = size
+  const canvas = document.querySelector("canvas");
+  const size = Math.min(document.documentElement.clientWidth, document.documentElement.clientHeight);
+  canvas.width = size - 10;
+  canvas.height = size - 10;
 });
 
 window.addEventListener("load", async () => {
-  const {cube} = await import('./load.js');
+  //
+  let { cube } = await import('./models.js');
+  //cube.printData();
 
   //Initializing canvas vars
   const c = document.getElementById("canvas");
@@ -17,7 +19,6 @@ window.addEventListener("load", async () => {
   //Simpler height and width
   const width = c.width;
   const height = c.height;
-  let vic = new Victor(41, 1337);
   //Per-pixel control of canvas
   let imageData = ctx.createImageData(width, height);
 
@@ -33,52 +34,56 @@ window.addEventListener("load", async () => {
   const blue  = [  0,   0, 255];
   const white = [255, 255, 255];
 
-  //Function for all logic
+
+  let objects = [];
+  let faces = [];
+
+
+
+  //Main run loop
   function main(curTime) {
     let rot = curTime * 30/1000
     s.screenFill(black);
-
-    s.drawRotCube([0, 0, -5], 1, rot%360, rot%360, rot%360, white);
-
-    calcFrame += 1;
+    cube.setPos([0, 0, -5]);
+    //cube.addRot([rot, rot, rot]);
+    cube.addObject(faces);
+    for(let i = 0; i < faces.length; i++) {
+      faces[i].drawFace(s);
+    }
+    //s.drawRotCube([0, 0, -5], 1, [rot%360, rot%360, rot%360], white);
     s.zClear();
+    faces = [];
   }
+
+
 
   //Frame init
   let drawFrame = 1;
-  let calcFrame = 1;
-
   //Function to push frames to screen
   function push() {
-    //C:\Users\1653371\Personal\Code\JS\3d render\Resources\Meshes\Cube\cube.obj
-
-    //Calc ms from start of main loop to now
-    let time = window.performance.now() - startTime;
-
     //Run main logic function and see the time it takes to run it
     let t0 = window.performance.now();
-    main(time);
+    main(t0);
     let t1 = window.performance.now();
 
     //Convert 2d array to 1d array
     s.convertData(imageData);
-    //s.convertzbuff(imageData);
     //Waits until screen is ready to be refreshed
     window.requestAnimationFrame(push);
     //Puts 1d array onto canvas
     ctx.putImageData(imageData, 0, 0);
 
-    //Calculate calc fps and update it on screen every 5 draw frames
-    if(drawFrame%5 == 0) {
+    //Determine calc fps and update it on screen every 5 draw frames
+    if(drawFrame%10 == 0) {
       let timecalc = t1-t0;
       let fps = Math.round(1000/timecalc);
       document.getElementById("fps").innerHTML = "fps: " + fps;
     }
-    //Print frame number in console (useful for debugging)
-    //console.log("frame:" + frame);
+
+    //console.log("frame" + drawFrame);
     drawFrame += 1;
   }
-  let startTime = window.performance.now();
-  push(0, startTime);
+  //Init
+  push();
 });
 
