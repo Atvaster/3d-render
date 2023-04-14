@@ -1,0 +1,39 @@
+#body {
+  margin: 0;
+  padding: 0;
+  background-color: gray;
+}
+
+.wrapper {
+  display: inline-block;
+  position: relative;
+}
+
+#canvas {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  image-rendering: pixelated;
+}
+
+#zbuffer {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  image-rendering: pixelated;
+}
+
+.screenArea {
+  margin: 0;
+  margin-top: 5px;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+}
+
+#info {
+  position: absolute;
+  top: 2%;
+  left: 5%;
+  color: white;
+}
