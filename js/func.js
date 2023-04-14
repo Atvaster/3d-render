@@ -98,11 +98,9 @@ class Object {
 
   //Add rot
   addRot([x, y, z]) {
-    let chk = [this.rot[0] + x, this.rot[1] + y, this.rot[2] + z];
-    chk[0] = chk % 360;
-    chk[1] = chk % 360;
-    chk[2] = chk % 360;
-    this.rot = chk;
+    this.rot[0] = (this.rot[0] + x) % 360;
+    this.rot[1] = (this.rot[1] + y) % 360;
+    this.rot[2] = (this.rot[2] + z) % 360;
   }
 
 
