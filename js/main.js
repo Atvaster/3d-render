@@ -45,12 +45,15 @@ window.addEventListener("load", async () => {
     let rot = curTime * 30/1000
     s.screenFill(black);
     cube.setPos([0, 0, -5]);
-    cube.setRot([rot%360, rot%360, rot%360]);
-    //cube.addRot([rot, rot, rot]);
+    //cube.setRot([rot%360, rot%360, rot%360]);
+    cube.addRot([rot, rot, rot]);
     cube.addObject(faces);
     for(let i = 0; i < faces.length; i++) {
       faces[i].drawFace(s);
     }
+
+    //s.drawRotCube([0, 0, -5], 1, [rot%360, rot%360, rot%360], white);
+
     s.zClear();
     faces = [];
   }
@@ -86,4 +89,3 @@ window.addEventListener("load", async () => {
   //Init
   push();
 });
-
