@@ -6,5 +6,6 @@ async function loadFile(path) {
 }
 
 const cubeRaw = await loadFile("./Resources/Meshes/Cube/cube.obj");
+const cubeRawCol = await loadFile("./Resources/Meshes/Cube/cube.col");
 
-export { cubeRaw };
+export { cubeRaw, cubeRawCol };

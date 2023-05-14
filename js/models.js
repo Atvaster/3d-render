@@ -1,7 +1,6 @@
 import { Object } from "./func.js";
-let { cubeRaw } = await import('./load.js');
+let { cubeRaw, cubeRawCol } = await import('./load.js');
 
-const cube = new Object(cubeRaw);
-const cube2 = new Object(cubeRaw);
+const cube = new Object(cubeRaw, cubeRawCol);
 
-export { cube, cube2 };
+export { cube };

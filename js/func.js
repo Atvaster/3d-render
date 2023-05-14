@@ -20,10 +20,12 @@ function makeArray(w, h, val) {
 class Face {
   object; //Used to later get rot and pos of face
   vertices = []; //Values corresponding to indices of vertices of given object
+  faceNum;
 
-  constructor(newObject, newVertices) {
+  constructor(newObject, newVertices, newFaceNum) {
     this.object = newObject;
     this.vertices = newVertices;
+    this.faceNum = newFaceNum;
   }
 
   drawFace(screen) {
@@ -55,7 +57,7 @@ class Face {
 
     points = screen.rotPoints(points, this.object.pos, this.object.rot); //Apply needed rotations
     points = screen.projectPoints(points); //Project from object space into screen space
-    screen.drawTrig(points, white); //Draw triangle
+    screen.drawTrig(points, this.object.faceCols[this.faceNum]); //Draw triangle
   }
 }
 
@@ -70,9 +72,13 @@ class Object {
   pos = [];
   rot = [];
 
+  //Extra data
+  faceCols = [];
+
 
   //Constructor
-  constructor(objString) {
+  constructor(objString, colString) {
+    this.parseCol(colString);
     this.parseObj(objString);
     this.pos = [0, 0, 0];
     this.rot = [0, 0, 0];
@@ -120,6 +126,8 @@ class Object {
     // console.log(this.pos);
     // console.log("Rotation:");
     // console.log(this.rot);
+    console.log("Colors:");
+    console.log(this.faceCols);
   }
 
   //Parse obj file
@@ -140,7 +148,7 @@ class Object {
           lines[i][j] = lines[i][j].split("/");
           face.push(parseInt(lines[i][j][0]));
         }
-        this.faces.push(new Face(this, face));
+        this.faces.push(new Face(this, face, this.faces.length));
       }
       //Vertex Normals
       if(lines[i][0] == "vn") {
@@ -148,6 +156,19 @@ class Object {
         this.vertexNormals.push(norm);
       }
     }
+  }
+
+  //Parse colors
+  parseCol(lines) {
+    lines = lines.split("\n");
+    for(let i = 0; i < lines.length; i++) {
+      lines[i] = lines[i].split(" ");
+      //Current only case, a face color
+      if(lines[i][0] == "f") {
+        this.faceCols.push(lines[i][1]);
+      }
+    }
+    
   }
 
   addObject(allFaces) {
@@ -393,6 +414,13 @@ class Screen {
 
   //Draw a triangle using alternate method
   drawTrig(points, color) {
+    if(color == "red") {
+      color = red;
+    } else if(color == "green") {
+      color = green;
+    } else if(color == "blue") {
+      color = blue;
+    }
     points = this.orderYPoints(points);
     let point1 = points[0];
     let point2 = points[1];
