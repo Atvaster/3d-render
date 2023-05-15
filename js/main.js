@@ -46,8 +46,8 @@ window.addEventListener("load", async () => {
     let rot = curTime * 30/1000
     s.screenFill(black);
     cube.setPos([0, 0  , -5]);
-    cube.setRot([0, 135, 0]);
-    //cube.setRot([rot%360, rot%360, rot%360]);
+    //cube.setRot([0, 135, 0]);
+    cube.setRot([rot%360, rot%360, rot%360]);
     //cube.addRot([rot%100, rot%100, rot%100]);
     cube.addObject(faces);
     for(let i = 0; i < faces.length; i++) {
