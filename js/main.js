@@ -1,5 +1,5 @@
 //import functions
-import { Screen, Object, makeArray } from "./func.js";
+import { Screen, Object, Misc} from "./func.js";
 
 window.addEventListener("DOMContentLoaded", ()=>{
   const canvas = document.querySelector("canvas");
@@ -9,9 +9,8 @@ window.addEventListener("DOMContentLoaded", ()=>{
 });
 
 window.addEventListener("load", async () => {
-  //
-  let { cube } = await import('./models.js');
-  //cube.printData();
+  //Initializing models
+  let { cube, sqrPyr } = await import('./models.js');
 
   //Initializing canvas vars
   const c = document.getElementById("canvas");
@@ -23,7 +22,7 @@ window.addEventListener("load", async () => {
   let imageData = ctx.createImageData(width, height);
 
   //2d array that I will write to.
-  let pixels = makeArray(height, width, 0); //width and height swapped for [x][y] to be the syntax
+  let pixels = Misc.makeArray(height, width, 0); //width and height swapped for [x][y] to be the syntax
 
   //Screen init object
   const s = new Screen(pixels);
@@ -34,27 +33,36 @@ window.addEventListener("load", async () => {
   const blue  = [  0,   0, 255];
   const white = [255, 255, 255];
 
+  //Configs
+  const FRAME_SMOOTHING = 10; //amount of frames over which to average framerate
+  const FRAME_UPDATE_RATE = 10; //measured in frames
+  const TARGET_FPS = 1000;
+
 
   let objects = [];
   let faces = [];
-  //cube.printData();
+
+  let testObj = sqrPyr;
+  //testObje.printData();
 
 
 
   //Main run loop
-  function main(curTime) {
-    let rot = curTime * 30/1000
+  function main(curTime, preTime) {
+    let t = (curTime-preTime);
+    //console.log(t.toString() + " ms");
+    let rot = t/100;
     s.screenFill(black);
-    cube.setPos([0, 0  , -5]);
-    //cube.setRot([0, 135, 0]);
-    cube.setRot([rot%360, rot%360, rot%360]);
-    //cube.addRot([rot%100, rot%100, rot%100]);
-    cube.addObject(faces);
+    testObj.setPos([0, 0  , -5]);
+    //testObj.setRot([0, 135, 0]);
+    //testObj.setRot([0, rot%360, 0]);
+    testObj.addRot([0, rot, 0]);
+    testObj.addObject(faces);
     for(let i = 0; i < faces.length; i++) {
       faces[i].drawFace(s);
     }
-
-    //s.drawRotCube([0, 0, -5], 1, [rot%360, rot%360, rot%360], white);
+    //testObj.printData();
+    //s.drawRottestObj([0, 0, -5], 1, [rot%360, rot%360, rot%360], white);
 
     s.zClear();
     faces = [];
@@ -62,14 +70,17 @@ window.addEventListener("load", async () => {
 
 
 
-  //Frame init
+  //Push func init
   let drawFrame = 1;
+  let tprev = Date.now();
+  let frametimes = Misc.makeArray(1, FRAME_SMOOTHING, 0); //Collect previous frametiems to average fps and smooth it out
+  const TARGET_FRAME_TIME = 1000/TARGET_FPS;
   //Function to push frames to screen
   function push() {
     //Run main logic function and see the time it takes to run it
-    let t0 = window.performance.now();
-    main(t0);
-    let t1 = window.performance.now();
+    let tnow = Date.now();
+    main(tnow, tprev);
+    tprev = Date.now();
 
     //Convert 2d array to 1d array
     s.convertData(imageData);
@@ -77,11 +88,18 @@ window.addEventListener("load", async () => {
     window.requestAnimationFrame(push);
     //Puts 1d array onto canvas
     ctx.putImageData(imageData, 0, 0);
+    let tcheck = Date.now();
+    if((tcheck - tnow) < TARGET_FRAME_TIME) {
+      Misc.sleep(TARGET_FRAME_TIME - (tcheck - tnow));
+    }
+
+    let tafter = Date.now();
 
     //Determine calc fps and update it on screen every 5 draw frames
-    if(drawFrame%10 == 0) {
-      let timecalc = t1-t0;
-      let fps = Math.round(1000/timecalc);
+    let timediff = tafter-tnow;
+    frametimes[drawFrame%(frametimes.length)] = timediff;
+    let fps = Math.round((1000*frametimes.length)/Misc.sum(frametimes));
+    if(drawFrame%FRAME_UPDATE_RATE == 0) {
       document.getElementById("fps").innerHTML = "fps: " + fps;
     }
 

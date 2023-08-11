@@ -4,17 +4,46 @@ let red   = [255,   0,   0];
 let green = [  0, 255,   0];
 let blue  = [  0,   0, 255];
 let white = [255, 255, 255];
-//Function to make 2d arrays of a given size
-function makeArray(w, h, val) {
-  let arr = [];
-  for(let i = 0; i < h; i++) {
-    arr[i] = [];
-    for(let j = 0; j < w; j++) {
-      arr[i][j] = val;
+
+//Class to store miscellaneous functions
+class Misc {
+  //Function to make 2d arrays of a given size
+  static makeArray(w, h, val) {
+    let arr = [];
+    for(let i = 0; i < h; i++) {
+      arr[i] = [];
+      for(let j = 0; j < w; j++) {
+        arr[i][j] = val;
+      }
+    }
+    return arr;
+  }
+
+  //Pause processing for x number of milliseconds
+  static sleep(milliseconds) {
+    var start = new Date().getTime();
+    for (var i = 0; i < 1e7; i++) {
+      if ((new Date().getTime() - start) > milliseconds){
+        break;
+      }
     }
   }
-  return arr;
+
+  //Sum values of array
+  static sum(arr) {
+    let sumVal = 0;
+    for(let i = 0; i < arr.length; i++) {
+      sumVal += arr[i];
+    }
+    return sumVal;
+  }
+
+  //Round to decimal place
+  static round(num, place) {
+    return Math.round(num * Math.pow(10, place))/Math.pow(10, place);
+  }
 }
+
 
 //Face class
 class Face {
@@ -163,12 +192,12 @@ class Object {
     lines = lines.split("\n");
     for(let i = 0; i < lines.length; i++) {
       lines[i] = lines[i].split(" ");
+      lines[i][1] = lines[i][1].split("\r")[0]; //Removing bad formatting
       //Current only case, a face color
       if(lines[i][0] == "f") {
         this.faceCols.push(lines[i][1]);
       }
     }
-    
   }
 
   addObject(allFaces) {
@@ -204,7 +233,7 @@ class Screen {
     this.array = array;
     this.width = array.length;
     this.height = array[0].length;
-    this.zbuff = makeArray(this.height, this.width, this.farclip); //width and height swapped for [x][y] to be the syntax
+    this.zbuff = Misc.makeArray(this.height, this.width, this.farclip); //width and height swapped for [x][y] to be the syntax
   }
 
 
@@ -258,10 +287,10 @@ class Screen {
   }
 
 
-  //Filters out not possible indexes, so that things can be half visible and not crash
+  //Filters out not possible indexes, so that things can be half visible and not crash, also converts form 2d syntax to the canvas 1d array format
   pixel(x, y, value) {
     if(x >= 0 && y >= 0 && x < this.width && y < this.height) {
-      this.array[Math.floor(x)][Math.floor(y)] = value;
+      this.array[x][y] = value;
     }
   }
 
@@ -420,6 +449,8 @@ class Screen {
       color = green;
     } else if(color == "blue") {
       color = blue;
+    } else {
+      color = white;
     }
     points = this.orderYPoints(points);
     let point1 = points[0];
@@ -596,4 +627,4 @@ class Screen {
 
 
 //Export all functions
-export { Screen, Object, makeArray };
+export { Screen, Object, Misc };
