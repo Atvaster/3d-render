@@ -1,7 +1,7 @@
 #body {
   margin: 0;
   padding: 0;
-  background-color: gray;
+  background-color: rgb(43, 43, 43);
 }
 
 .wrapper {
@@ -33,7 +33,7 @@
 
 #info {
   position: absolute;
-  top: 2%;
+  top: 3%;
   left: 5%;
   color: white;
 }

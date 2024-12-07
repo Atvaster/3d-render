@@ -30,9 +30,6 @@ window.addEventListener("load", async () => {
   //Per-pixel control of canvas
   let imageData = ctx.createImageData(width, height);
 
-  //2d array that I will write to.
-  let pixels = Misc.makeArray(height, width, 0); //width and height swapped for [x][y] to be the syntax
-
   //Screen init object
   const s = new Screen(imageData.data, width, height);
   //Color presets
@@ -52,7 +49,6 @@ window.addEventListener("load", async () => {
   let faces = [];
 
   let testObj = sqrPyr;
-  //testObje.printData();
 
   let mouseRot = 360/height;
 
@@ -94,8 +90,6 @@ window.addEventListener("load", async () => {
     main(tnow, tprev);
     tprev = performance.now();
 
-    //Convert 2d array to 1d array
-    // s.convertData(imageData);
     //Waits until screen is ready to be refreshed
     window.requestAnimationFrame(push);
     //Puts 1d array onto canvas
@@ -112,7 +106,7 @@ window.addEventListener("load", async () => {
     frametimes[drawFrame%(frametimes.length)] = timediff;
     let fps = Math.round((1000*frametimes.length)/Misc.sum(frametimes));
     if(drawFrame%FRAME_UPDATE_RATE == 0) {
-      document.getElementById("fps").innerHTML = "fps: " + fps;
+      document.getElementById("fps").innerHTML = "FPS: " + fps;
     }
 
     //console.log("frame" + drawFrame);
