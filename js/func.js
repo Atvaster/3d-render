@@ -229,50 +229,19 @@ class Screen {
 
 
   //Constructor
-  constructor(array) {
+  constructor(array, width, height) {
     this.array = array;
-    this.width = array.length;
-    this.height = array[0].length;
+    this.width = width;
+    this.height = height;
     this.zbuff = Misc.makeArray(this.height, this.width, this.farclip); //width and height swapped for [x][y] to be the syntax
   }
-
-
-  //Turn pixel data into 1d array for use in canvas
-  convertData(imgd) {
-    let array = this.array;
-    for(let x = 0; x < this.width - 1; x++) {
-      for(let y = 0; y < this.height - 1; y++) {
-        let pixelIndex = (y * this.width + x) * 4;
-        imgd.data[pixelIndex] = array[x][y][0];
-        imgd.data[pixelIndex + 1] = array[x][y][1];
-        imgd.data[pixelIndex + 2] = array[x][y][2];
-        imgd.data[pixelIndex + 3] = 255;
-      }
-    }
-  }
-
-    //Turn pixel data into 1d array for use in canvas
-  convertzbuff(imgd) {
-    let zbuff = this.zbuff;
-    for(let x = 0; x < this.width - 1; x++) {
-      for(let y = 0; y < this.height - 1; y++) {
-        let grayCol = (1 - zbuff[x][y]/this.farclip) * 255;
-        let pixelIndex = (y * this.width + x) * 4;
-        imgd.data[pixelIndex] = grayCol;
-        imgd.data[pixelIndex + 1] = grayCol;
-        imgd.data[pixelIndex + 2] = grayCol;
-        imgd.data[pixelIndex + 3] = 255;
-      }
-    }
-  }
-
 
   //Fills the whole array with one solid color
   screenFill(color) {
     let array = this.array;
     for(let x = 0; x < this.width - 1; x++) {
       for(let y = 0; y < this.height - 1; y++) {
-        array[x][y] = color;
+        this.pixel(x, y, color);
       }
     }
   }
@@ -289,16 +258,18 @@ class Screen {
 
   //Filters out not possible indexes, so that things can be half visible and not crash, also converts form 2d syntax to the canvas 1d array format
   pixel(x, y, value) {
-    if(x >= 0 && y >= 0 && x < this.width && y < this.height) {
-      this.array[x][y] = value;
-    }
+    let pixelIndex = (y * this.width + x) * 4;
+    this.array[pixelIndex] = value[0]
+    this.array[pixelIndex + 1] = value[1]
+    this.array[pixelIndex + 2] = value[2]
+    this.array[pixelIndex + 3] = 255;
   }
 
   //Only draw pixel if it is in front.
   zpixel(x, y, z, value) {
     x = Math.floor(x);
     y = Math.floor(y);
-    if(z > this.zbuff[x][y] && z < this.nearclip) {
+    if(x >= 0 && y >= 0 && x < this.width && y < this.height && z > this.zbuff[x][y] && z < this.nearclip) {
       this.pixel(x, y, value);
       this.zbuff[x][y] = z;
     }
@@ -347,7 +318,7 @@ class Screen {
       for(let y = point1[1]; y <= point2[1]; y+=1) {
         this.pixel(point1[0], y, color);
       }
-    //Case for y being iterated letiable
+    //Case for y being iterated variable
     } else if(m > 1 || m < -1) {
       if(point1[1] > point2[1]) {
         let temp = point1;
@@ -358,7 +329,7 @@ class Screen {
         let x = (y - b)/m
         this.pixel(x, y, color);
       }
-    //Case for x being iterated letiable
+    //Case for x being iterated variable
     } else {
       if(point1[0] > point2[0]) {
         let temp = point1;
@@ -401,18 +372,8 @@ class Screen {
 
   //Bubble sort points in array based on y value
   orderYPoints(points) {
-    for(let i = 0; i < points.length - 1; i++) {
-      for(let j = 0; j < points.length - i - 1; j++) {
-        if(points[j][1] > points[j+1][1]) {
-          let temp = points[j];
-          points[j] = points[j+1];
-          points[j+1] = temp;
-        }
-      }
-    }
-    return points;
+    return points.toSorted((a, b) => a[1]-b[1]);
   }
-
 
   //Compute gradient to find other values like startX and endX to draw between.
   scanLine(y, pointA, pointB, pointC, pointD, color) {

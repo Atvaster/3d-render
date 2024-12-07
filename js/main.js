@@ -9,6 +9,15 @@ window.addEventListener("DOMContentLoaded", ()=>{
 });
 
 window.addEventListener("load", async () => {
+
+  let mouseX = 0;
+  let mouseY = 0;
+
+  document.onmousemove = function(event) {
+    mouseX = event.pageX;
+    mouseY = event.pageY
+  }
+
   //Initializing models
   let { cube, sqrPyr } = await import('./models.js');
 
@@ -25,7 +34,7 @@ window.addEventListener("load", async () => {
   let pixels = Misc.makeArray(height, width, 0); //width and height swapped for [x][y] to be the syntax
 
   //Screen init object
-  const s = new Screen(pixels);
+  const s = new Screen(imageData.data, width, height);
   //Color presets
   const black = [  0,   0,   0];
   const red   = [255,   0,   0];
@@ -45,24 +54,27 @@ window.addEventListener("load", async () => {
   let testObj = sqrPyr;
   //testObje.printData();
 
+  let mouseRot = 360/height;
 
 
   //Main run loop
   function main(curTime, preTime) {
     let t = (curTime-preTime);
-    //console.log(t.toString() + " ms");
-    let rot = t/100;
+    // console.log(t + " ms");
+    let tIn = (t+1)/10;
+    let rot = tIn;
+    // let rot = 2/(t+1);
     s.screenFill(black);
-    testObj.setPos([0, 0  , -5]);
+    // testObj.setPos([0, 2, -5]);
+    testObj.setPos([0, (testObj.pos[1]+tIn/100)%3, -5])
     //testObj.setRot([0, 135, 0]);
-    //testObj.setRot([0, rot%360, 0]);
-    testObj.addRot([0, rot, 0]);
+    testObj.setRot([-180-mouseY*mouseRot, -mouseX*mouseRot, 0]);
+    // testObj.addRot([0, rot, 0]);
     testObj.addObject(faces);
     for(let i = 0; i < faces.length; i++) {
       faces[i].drawFace(s);
     }
     //testObj.printData();
-    //s.drawRottestObj([0, 0, -5], 1, [rot%360, rot%360, rot%360], white);
 
     s.zClear();
     faces = [];
@@ -72,28 +84,28 @@ window.addEventListener("load", async () => {
 
   //Push func init
   let drawFrame = 1;
-  let tprev = Date.now();
+  let tprev = performance.now();
   let frametimes = Misc.makeArray(1, FRAME_SMOOTHING, 0); //Collect previous frametiems to average fps and smooth it out
   const TARGET_FRAME_TIME = 1000/TARGET_FPS;
   //Function to push frames to screen
   function push() {
     //Run main logic function and see the time it takes to run it
-    let tnow = Date.now();
+    let tnow = performance.now();
     main(tnow, tprev);
-    tprev = Date.now();
+    tprev = performance.now();
 
     //Convert 2d array to 1d array
-    s.convertData(imageData);
+    // s.convertData(imageData);
     //Waits until screen is ready to be refreshed
     window.requestAnimationFrame(push);
     //Puts 1d array onto canvas
     ctx.putImageData(imageData, 0, 0);
-    let tcheck = Date.now();
+    let tcheck = performance.now();
     if((tcheck - tnow) < TARGET_FRAME_TIME) {
       Misc.sleep(TARGET_FRAME_TIME - (tcheck - tnow));
     }
 
-    let tafter = Date.now();
+    let tafter = performance.now();
 
     //Determine calc fps and update it on screen every 5 draw frames
     let timediff = tafter-tnow;
