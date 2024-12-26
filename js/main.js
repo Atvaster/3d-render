@@ -3,7 +3,7 @@ import { Screen, Object, Misc} from "./func.js";
 
 window.addEventListener("DOMContentLoaded", ()=>{
   const canvas = document.querySelector("canvas");
-  const size = Math.min(document.documentElement.clientWidth, document.documentElement.clientHeight);
+  const size = Math.min(document.documentElement.scrollWidth, document.documentElement.scrollHeight);
   canvas.width = size;
   canvas.height = size;
 });
