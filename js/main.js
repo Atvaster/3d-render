@@ -5,6 +5,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   const outer = window.frameElement;
   let curDoc;
   if(outer != null) {
+    console.log("Load as embedded");
     curDoc = outer.contentDocument;
     curDoc.getElementById("fps").style.display = 'none';
   } else {
