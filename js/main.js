@@ -4,16 +4,12 @@ import { Screen, Object, Misc} from "./func.js";
 window.addEventListener("DOMContentLoaded", async () => {
   const outer = window.frameElement;
   // console.log(outer);
-  let curDoc;
+  const curDoc = document;
 
   if ( window !== window.parent ) {
     console.log("Load as embedded");
-    curDoc = outer.contentDocument;
     curDoc.getElementById("fps").style.display = 'none';
-  } else {
-    curDoc = document;
   }
-
   // if(outer != null) {
   //   console.log("Load as embedded");
   //   curDoc = outer.contentDocument;
