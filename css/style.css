@@ -25,10 +25,10 @@
 
 .screenArea {
   margin: 0;
-  margin-top: 5px;
+  margin-top: 0px;
   padding: 0;
   display: flex;
-  justify-content: center;
+  /* justify-content: center; */
 }
 
 #info {
