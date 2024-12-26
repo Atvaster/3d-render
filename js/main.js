@@ -1,19 +1,25 @@
 //import functions
 import { Screen, Object, Misc} from "./func.js";
 
-window.addEventListener("DOMContentLoaded", ()=>{
-  const canvas = document.querySelector("canvas");
-  const size = Math.min(document.documentElement.scrollWidth, document.documentElement.scrollHeight);
+window.addEventListener("DOMContentLoaded", async () => {
+  const outer = window.frameElement;
+  let curDoc;
+  if(outer != null) {
+    curDoc = outer.contentDocument;
+  } else {
+    curDoc = document;
+  }
+
+  const canvas = curDoc.querySelector("canvas");
+  const size = Math.min(curDoc.documentElement.clientWidth, curDoc.documentElement.clientHeight);
   canvas.width = size;
   canvas.height = size;
-});
 
-window.addEventListener("load", async () => {
 
   let mouseX = 0;
   let mouseY = 0;
 
-  document.onmousemove = function(event) {
+  curDoc.onmousemove = function(event) {
     mouseX = event.pageX;
     mouseY = event.pageY
   }
@@ -22,7 +28,7 @@ window.addEventListener("load", async () => {
   let { cube, sqrPyr } = await import('./models.js');
 
   //Initializing canvas vars
-  const c = document.getElementById("canvas");
+  const c = curDoc.getElementById("canvas");
   const ctx = c.getContext('2d');
   //Simpler height and width
   const width = c.width;
@@ -109,7 +115,7 @@ window.addEventListener("load", async () => {
     frametimes[drawFrame%(frametimes.length)] = timediff;
     let fps = Math.round((1000*frametimes.length)/Misc.sum(frametimes));
     if(drawFrame%FRAME_UPDATE_RATE == 0) {
-      document.getElementById("fps").innerHTML = "FPS: " + fps;
+      curDoc.getElementById("fps").innerHTML = "FPS: " + fps;
     }
 
     //console.log("frame" + drawFrame);
