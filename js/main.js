@@ -4,8 +4,8 @@ import { Screen, Object, Misc} from "./func.js";
 window.addEventListener("DOMContentLoaded", ()=>{
   const canvas = document.querySelector("canvas");
   const size = Math.min(document.documentElement.clientWidth, document.documentElement.clientHeight);
-  canvas.width = size - 10;
-  canvas.height = size - 10;
+  canvas.width = size;
+  canvas.height = size;
 });
 
 window.addEventListener("load", async () => {
@@ -62,7 +62,9 @@ window.addEventListener("load", async () => {
     // let rot = 2/(t+1);
     s.screenFill(black);
     // testObj.setPos([0, 2, -5]);
-    testObj.setPos([0, (testObj.pos[1]+tIn/100)%3, -5])
+    let angleSet = (curTime-tinit)/2000;
+    // console.log(angleSet)
+    testObj.setPos([0, 2*(Math.sin(angleSet)), -5]);
     //testObj.setRot([0, 135, 0]);
     testObj.setRot([-180-mouseY*mouseRot, -mouseX*mouseRot, 0]);
     // testObj.addRot([0, rot, 0]);
@@ -80,6 +82,7 @@ window.addEventListener("load", async () => {
 
   //Push func init
   let drawFrame = 1;
+  let tinit = performance.now();
   let tprev = performance.now();
   let frametimes = Misc.makeArray(1, FRAME_SMOOTHING, 0); //Collect previous frametiems to average fps and smooth it out
   const TARGET_FRAME_TIME = 1000/TARGET_FPS;
