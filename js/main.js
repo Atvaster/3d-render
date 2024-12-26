@@ -6,6 +6,7 @@ window.addEventListener("DOMContentLoaded", async () => {
   let curDoc;
   if(outer != null) {
     curDoc = outer.contentDocument;
+    curDoc.getElementById("fps").style.display = 'none';
   } else {
     curDoc = document;
   }
@@ -70,7 +71,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     // testObj.setPos([0, 2, -5]);
     let angleSet = (curTime-tinit)/2000;
     // console.log(angleSet)
-    testObj.setPos([0, 2*(Math.sin(angleSet)), -5]);
+    testObj.setPos([0, 2*(Math.sin(angleSet)), -4]);
     //testObj.setRot([0, 135, 0]);
     testObj.setRot([-180-mouseY*mouseRot, -mouseX*mouseRot, 0]);
     // testObj.addRot([0, rot, 0]);
